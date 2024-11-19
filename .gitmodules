@@ -1,6 +1,3 @@
-[submodule "apps/wfo-ui"]
-	path = apps/wfo-ui
-	url = git@github.com:workfloworchestrator/example-orchestrator-ui.git
 [submodule "apps/example-orchestrator-ui"]
 	path = apps/example-orchestrator-ui
 	url = https://github.com/acidjunk/example-orchestrator-ui.git
