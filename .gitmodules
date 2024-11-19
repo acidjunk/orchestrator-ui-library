@@ -3,4 +3,4 @@
 	url = git@github.com:workfloworchestrator/example-orchestrator-ui.git
 [submodule "apps/example-orchestrator-ui"]
 	path = apps/example-orchestrator-ui
-	url = https://github.com/acidjunk/example-orchestrator-ui.git
+	url = git@github.com:acidjunk/example-orchestrator-ui.git
