@@ -11,8 +11,7 @@
         "prettier-fix": "prettier --write --end-of-line auto \"{**/*,*}.{ts,tsx,json,js,md}\"",
         "build": "turbo run build",
         "packages:changeset": "changeset",
-        "packages:publish": "turbo run build lint test && changeset publish",
-        "postinstall": "husky && turbo run build --filter=./packages/*"
+        "packages:publish": "turbo run build lint test && changeset publish"
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.1",
