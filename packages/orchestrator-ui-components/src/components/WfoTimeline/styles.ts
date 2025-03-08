@@ -5,7 +5,12 @@ import { StepStatus } from '@/types';
 
 import { TimelinePosition } from './WfoTimeline';
 
-export const getStyles = ({ theme }: WfoTheme) => {
+export const getTimelineStyles = ({ theme }: WfoTheme) => {
+    const TIMELINE_HEIGHT = theme.base * 2.5;
+    const TIMELINE_OUTLINE_WIDTH = theme.base * 0.75;
+
+    const timelineHeightPx = `${TIMELINE_HEIGHT}px`;
+    const timelineOutlineWidthPx = `${TIMELINE_OUTLINE_WIDTH}px`;
     const emptyStepOuterDiameter = theme.base;
     const emptyStepInnerDiameter = theme.base / 2;
     const stepWithValueOuterDiameter = theme.base * 1.5;
@@ -41,12 +46,19 @@ export const getStyles = ({ theme }: WfoTheme) => {
     const timelinePanelStyle = css({
         backgroundColor: theme.colors.body,
         borderRadius: theme.border.radius.medium,
+        outline: `${timelineOutlineWidthPx} solid ${theme.colors.emptyShade}`,
+        height: timelineHeightPx,
+        marginTop: timelineOutlineWidthPx,
+        marginBottom: timelineOutlineWidthPx,
         overflow: 'auto',
         scrollbarWidth: 'auto',
         paddingTop: theme.font.baseline * 2,
         paddingBottom: theme.font.baseline * 2,
         paddingLeft: theme.font.baseline * 4,
         paddingRight: theme.font.baseline * 4,
+        position: 'sticky',
+        top: timelineOutlineWidthPx,
+        zIndex: 2, // Some EUI components have a zIndex
         display: 'flex',
 
         '& > button': {
@@ -161,6 +173,8 @@ export const getStyles = ({ theme }: WfoTheme) => {
     });
 
     return {
+        TIMELINE_HEIGHT,
+        TIMELINE_OUTLINE_WIDTH,
         timelinePanelStyle,
         stepStyle,
         clickableStyle,

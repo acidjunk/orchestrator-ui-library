@@ -1,21 +1,36 @@
 import React, { FC } from 'react';
 
+import { useWithOrchestratorTheme } from '@/hooks';
 import { useGetCustomerQuery } from '@/rtk';
-import { Customer, CustomerDescriptions } from '@/types';
+import {
+    useSetCustomerDescriptionMutation,
+    useUpdateCustomerDescriptionMutation,
+} from '@/rtk/endpoints/customerDescriptions';
+import { Customer, CustomerDescriptions, SubscriptionDetail } from '@/types';
+import { INVISIBLE_CHARACTER } from '@/utils';
 
-type CustomerDescriptionWithName = Pick<
-    CustomerDescriptions,
-    'description' | 'customerId'
-> &
+import { WfoInlineEdit } from '../WfoInlineEdit';
+import { getSubscriptionDetailStyles } from './styles';
+
+type CustomerDescriptionWithName = CustomerDescriptions &
     Partial<Pick<Customer, 'fullname' | 'shortcode'>>;
 
 export type WfoCustomerDescriptionsFieldProps = {
     customerDescriptions: CustomerDescriptions[];
+    subscriptionCustomerId: SubscriptionDetail['customerId'];
+    subscriptionId: SubscriptionDetail['subscriptionId'];
 };
 
 export const WfoCustomerDescriptionsField: FC<
     WfoCustomerDescriptionsFieldProps
-> = ({ customerDescriptions }) => {
+> = ({ customerDescriptions, subscriptionCustomerId, subscriptionId }) => {
+    const {
+        customerDescriptionsCustomerNameStyle,
+        customerDescriptionsFormStyle,
+    } = useWithOrchestratorTheme(getSubscriptionDetailStyles);
+    const [updateCustomerDescription, {}] =
+        useUpdateCustomerDescriptionMutation();
+    const [setCustomerDescription, {}] = useSetCustomerDescriptionMutation();
     const customerIds = customerDescriptions.map(
         (customerDescription) => customerDescription.customerId,
     );
@@ -26,28 +41,87 @@ export const WfoCustomerDescriptionsField: FC<
     }
 
     const customerDescriptionsWithName: CustomerDescriptionWithName[] =
-        customerDescriptions.map(({ description, customerId }) => {
-            const customer = data.find(
-                (customer) => customer.customerId === customerId,
-            );
+        customerDescriptions.map(
+            ({ description, customerId, id, subscriptionId }) => {
+                const customer = data.find(
+                    (customer) => customer.customerId === customerId,
+                );
 
-            return {
-                customerId,
-                shortcode: customer?.shortcode,
-                fullname: customer?.fullname,
-                description,
-            };
-        });
+                return {
+                    id,
+                    customerId,
+                    shortcode: customer?.shortcode,
+                    fullname: customer?.fullname,
+                    description,
+                    subscriptionId,
+                };
+            },
+        );
+
+    const customerDescriptionEditForm = ({
+        customerId,
+        fullname,
+        shortcode,
+        description,
+        id,
+        subscriptionId,
+    }: CustomerDescriptionWithName) => (
+        <div key={customerId} css={{ display: 'flex' }}>
+            <div css={customerDescriptionsCustomerNameStyle}>
+                {fullname ?? customerId} {`${shortcode ?? customerId}`}:
+            </div>
+            <WfoInlineEdit
+                value={description}
+                onSave={(value) =>
+                    updateCustomerDescription({
+                        id: id,
+                        description: value,
+                        customerId: customerId,
+                        subscriptionId: subscriptionId,
+                    })
+                }
+            />
+        </div>
+    );
+
+    const customerDescriptionCreateForm = () => {
+        if (!subscriptionCustomerId) return;
+        return (
+            <div key={subscriptionCustomerId}>
+                <WfoInlineEdit
+                    value={INVISIBLE_CHARACTER}
+                    onlyShowOnHover={true}
+                    onSave={(value) =>
+                        setCustomerDescription({
+                            customerId: subscriptionCustomerId,
+                            subscriptionId: subscriptionId,
+                            description: value,
+                        })
+                    }
+                />
+            </div>
+        );
+    };
+
+    const currentCustomerSubscriptionDescription =
+        customerDescriptionsWithName.find(
+            ({ customerId }) => customerId === subscriptionCustomerId,
+        );
 
     return (
-        <div>
-            {customerDescriptionsWithName.map(
-                ({ shortcode, fullname, description, customerId }) => (
-                    <div key={customerId} title={fullname ?? customerId}>{`${
-                        shortcode ?? customerId
-                    }: ${description}`}</div>
-                ),
-            )}
+        <div css={customerDescriptionsFormStyle}>
+            {(currentCustomerSubscriptionDescription &&
+                customerDescriptionEditForm(
+                    currentCustomerSubscriptionDescription,
+                )) ||
+                customerDescriptionCreateForm()}
+            {customerDescriptionsWithName
+                .filter(
+                    ({ customerId }) => customerId !== subscriptionCustomerId,
+                )
+                .map((customerDescriptionWithName) =>
+                    customerDescriptionEditForm(customerDescriptionWithName),
+                )}
         </div>
     );
 };

@@ -1,9 +1,11 @@
 import React, { Ref, useImperativeHandle, useRef } from 'react';
 
-import { useWithOrchestratorTheme } from '@/hooks';
+import { getPageTemplateStyles } from '@/components/WfoPageTemplate/WfoPageTemplate/styles';
+import { getTimelineStyles } from '@/components/WfoTimeline/styles';
+import { useContentRef, useWithOrchestratorTheme } from '@/hooks';
 
 import { WfoStep } from '../WfoStep';
-import { getStyles } from '../styles';
+import { getWorkflowStepsStyles } from '../styles';
 import { StepListItem } from './../WfoWorkflowStepList';
 
 export type WfoStepListRef = {
@@ -33,9 +35,22 @@ export const WfoStepList = React.forwardRef(
         }: WfoStepListProps,
         reference: Ref<WfoStepListRef>,
     ) => {
-        const { stepSpacerStyle } = useWithOrchestratorTheme(getStyles);
+        const { NAVIGATION_HEIGHT } = useWithOrchestratorTheme(
+            getPageTemplateStyles,
+        );
+        const { TIMELINE_HEIGHT, TIMELINE_OUTLINE_WIDTH } =
+            useWithOrchestratorTheme(getTimelineStyles);
+        const { SPACE_BETWEEN_STEPS, stepSpacerStyle } =
+            useWithOrchestratorTheme(getWorkflowStepsStyles);
+        const scrollOffset =
+            NAVIGATION_HEIGHT +
+            TIMELINE_HEIGHT +
+            TIMELINE_OUTLINE_WIDTH +
+            SPACE_BETWEEN_STEPS;
 
         const stepReferences = useRef(new Map<string, HTMLDivElement>());
+
+        const { contentRef } = useContentRef();
 
         let stepStartTime = startedAt;
 
@@ -56,9 +71,18 @@ export const WfoStepList = React.forwardRef(
                             onTriggerExpandStepListItem(foundStepListItem),
                         );
                     });
-                    stepReferences.current.get(stepId)?.scrollIntoView({
-                        behavior: 'smooth',
-                    });
+
+                    const targetRect = stepReferences.current
+                        .get(stepId)
+                        ?.getBoundingClientRect();
+
+                    if (targetRect) {
+                        const { top } = targetRect;
+                        contentRef?.current?.scrollBy({
+                            top: top - scrollOffset,
+                            behavior: 'smooth',
+                        });
+                    }
                 } catch {
                     console.error(
                         'Error scrolling to step with stepId ',

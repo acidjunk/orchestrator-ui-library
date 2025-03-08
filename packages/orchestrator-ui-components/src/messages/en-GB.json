@@ -20,11 +20,11 @@
         "lightMode": "Light mode",
         "websocketConnected": "This page receives live updates from the server",
         "websocketDisconnected": "The connection to the server is lost, click the icon or refresh the page",
+        "websocketDisconnectedShort": "WebSocket disconnected, click the icon to reconnect",
         "resetToDefault": "Reset to default",
         "savePreferences": "Save preferences",
         "numberOfRows": "Number of rows",
-        "tableSettings": "Table settings",
-        "openMenu": "Open menu"
+        "tableSettings": "Table settings"
     },
     "common": {
         "product": "Product",
@@ -167,10 +167,11 @@
         "resourceTypes": {
             "type": "Resource type",
             "description": "Resource type description",
-            "resourceId": "Resource ID",
+            "resourceId": "ID",
             "usedInProductBlocks": "Used in product blocks"
         },
         "workflows": {
+            "workflowId": "ID",
             "name": "Workflow",
             "description": "Workflow description",
             "target": "Target",
@@ -178,6 +179,7 @@
             "createdAt": "Created"
         },
         "tasks": {
+            "workflowId": "ID",
             "name": "Task",
             "description": "Task description",
             "target": "Target",
@@ -427,5 +429,11 @@
             "headerTitle": "Total number of products",
             "listTitle": "Total number of product instances"
         }
+    },
+    "hamburgerMenu": {
+        "openMenu": "Open menu",
+        "support": "Support",
+        "softwareVersions": "Software Versions",
+        "logout": "Logout"
     }
 }

@@ -8,6 +8,10 @@ export type Nullable<T> = T | null;
 
 type GenericResponse = { [key: string]: unknown };
 
+export type StringifyObject<T extends object> = {
+    [key in keyof T]: string;
+};
+
 export type FieldValue = {
     field: string;
     value: string | number | boolean | null;
@@ -247,6 +251,7 @@ export interface Step {
 }
 
 export interface WorkflowDefinition {
+    workflowId: string;
     name: string;
     description?: string;
     target: WorkflowTarget;
@@ -255,6 +260,7 @@ export interface WorkflowDefinition {
 }
 
 export interface TaskDefinition {
+    workflowId: string;
     name: string;
     description?: string;
     target: WorkflowTarget;
@@ -457,10 +463,21 @@ export type SubscriptionDropdownOption = {
 };
 
 export type CustomerDescriptions = {
+    id: string;
     subscriptionId: string;
     description: string;
     customerId: string;
 };
+
+export type MetadataDescriptionParams = {
+    id: string;
+    description: string;
+};
+
+// export type Workflow = {
+//     workflow_id: string;
+//     description: string;
+// };
 
 export type SubscriptionDetail = {
     subscriptionId: string;

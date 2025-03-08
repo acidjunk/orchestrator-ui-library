@@ -20,6 +20,10 @@ export type WfoTableDataRowsProps<T extends object> = Pick<
     | 'className'
 >;
 
+export const DATA_ROW_CLASS = 'data-row';
+export const CONTROL_CELL_CLASS = 'control-cell';
+export const DATA_CELL_CLASS = 'data-cell';
+
 export const WfoTableDataRows = <T extends object>({
     data,
     columnConfig,
@@ -29,8 +33,14 @@ export const WfoTableDataRows = <T extends object>({
     onRowClick,
     className,
 }: WfoTableDataRowsProps<T>) => {
-    const { cellStyle, rowStyle, dataRowStyle, clickableStyle, setWidth } =
-        useWithOrchestratorTheme(getWfoTableStyles);
+    const {
+        cellStyle,
+        cellContentStyle,
+        rowStyle,
+        dataRowStyle,
+        clickableStyle,
+        setWidth,
+    } = useWithOrchestratorTheme(getWfoTableStyles);
 
     const sortedVisibleColumns = getSortedVisibleColumns(
         columnConfig,
@@ -43,7 +53,7 @@ export const WfoTableDataRows = <T extends object>({
             {data.map((row, index) => (
                 <Fragment key={`table-data-row-${index}`}>
                     <tr
-                        className={className}
+                        className={`${className} ${DATA_ROW_CLASS}`}
                         css={[
                             rowStyle,
                             dataRowStyle,
@@ -57,6 +67,7 @@ export const WfoTableDataRows = <T extends object>({
                             ) {
                                 return (
                                     <td
+                                        className={CONTROL_CELL_CLASS}
                                         colSpan={
                                             columnConfig.numberOfColumnsToSpan ??
                                             1
@@ -70,7 +81,7 @@ export const WfoTableDataRows = <T extends object>({
                                             setWidth(columnConfig.width),
                                         ]}
                                     >
-                                        <div>
+                                        <div css={cellContentStyle}>
                                             {columnConfig.renderControl(row)}
                                         </div>
                                     </td>
@@ -82,6 +93,7 @@ export const WfoTableDataRows = <T extends object>({
                             const result = row[key as keyof T];
                             return (
                                 <td
+                                    className={DATA_CELL_CLASS}
                                     key={key}
                                     css={[
                                         ...toOptionalArrayEntry(
@@ -91,7 +103,7 @@ export const WfoTableDataRows = <T extends object>({
                                         setWidth(columnConfig.width),
                                     ]}
                                 >
-                                    <div>
+                                    <div css={cellContentStyle}>
                                         <WfoDataCell
                                             customTooltip={columnConfig.renderTooltip?.(
                                                 result,

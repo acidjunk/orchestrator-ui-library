@@ -8,6 +8,8 @@ import {
     DEFAULT_PAGE_SIZE,
     DEFAULT_PAGE_SIZES,
     METADATA_PRODUCT_BLOCKS_TABLE_LOCAL_STORAGE_KEY,
+    PATH_METADATA_PRODUCT_BLOCKS,
+    PATH_METADATA_RESOURCE_TYPES,
     StoredTableConfig,
     WfoDataSorting,
     WfoDateTime,
@@ -19,6 +21,7 @@ import {
     getPageSizeChangeHandler,
     getQueryStringHandler,
 } from '@/components';
+import { WfoMetadataDescriptionField } from '@/components/WfoMetadata/WfoMetadataDescriptionField';
 import { WfoAdvancedTable } from '@/components/WfoTable/WfoAdvancedTable';
 import { WfoAdvancedTableColumnConfig } from '@/components/WfoTable/WfoAdvancedTable/types';
 import { ColumnType, Pagination } from '@/components/WfoTable/WfoTable';
@@ -28,7 +31,11 @@ import {
     useShowToastMessage,
     useStoredTableConfig,
 } from '@/hooks';
-import { useGetProductBlocksQuery, useLazyGetProductBlocksQuery } from '@/rtk';
+import {
+    useGetProductBlocksQuery,
+    useLazyGetProductBlocksQuery,
+    useUpdateProductBlockMutation,
+} from '@/rtk';
 import type { ProductBlocksResponse } from '@/rtk';
 import { mapRtkErrorToWfoError } from '@/rtk/utils';
 import {
@@ -41,6 +48,7 @@ import {
     csvDownloadHandler,
     getConcatenatedResult,
     getCsvFileNameWithDate,
+    getQueryUrl,
     getQueryVariablesForExport,
     parseDateToLocaleDateTimeString,
     parseIsoString,
@@ -69,6 +77,7 @@ export const WfoProductBlocksPage = () => {
     const getStoredTableConfig = useStoredTableConfig<ProductBlockDefinition>(
         METADATA_PRODUCT_BLOCKS_TABLE_LOCAL_STORAGE_KEY,
     );
+    const [updateProductBlock] = useUpdateProductBlockMutation();
 
     useEffect(() => {
         const storedConfig = getStoredTableConfig();
@@ -95,7 +104,7 @@ export const WfoProductBlocksPage = () => {
         productBlockId: {
             columnType: ColumnType.DATA,
             label: t('id'),
-            width: '90',
+            width: '90px',
             renderData: (value) => <WfoFirstPartUUID UUID={value} />,
             renderDetails: (value) => value,
             renderTooltip: (value) => value,
@@ -103,6 +112,7 @@ export const WfoProductBlocksPage = () => {
         name: {
             columnType: ColumnType.DATA,
             label: t('name'),
+            width: '300px',
             renderData: (name) => (
                 <WfoProductBlockBadge badgeType={BadgeType.PRODUCT_BLOCK}>
                     {name}
@@ -112,11 +122,23 @@ export const WfoProductBlocksPage = () => {
         tag: {
             columnType: ColumnType.DATA,
             label: t('tag'),
+            width: '120px',
         },
         description: {
             columnType: ColumnType.DATA,
             label: t('description'),
-            width: '400px',
+            width: '700px',
+            renderData: (value, row) => (
+                <WfoMetadataDescriptionField
+                    onSave={(updatedNote) =>
+                        updateProductBlock({
+                            id: row.productBlockId,
+                            description: updatedNote,
+                        })
+                    }
+                    description={value}
+                />
+            ),
         },
         status: {
             columnType: ColumnType.DATA,
@@ -129,12 +151,16 @@ export const WfoProductBlocksPage = () => {
             label: t('dependingProductBlocks'),
             renderData: (dependsOn) => (
                 <>
-                    {dependsOn.map((productBlock, index) => (
+                    {dependsOn.map(({ name }, index) => (
                         <WfoProductBlockBadge
                             key={index}
+                            link={getQueryUrl(
+                                PATH_METADATA_PRODUCT_BLOCKS,
+                                `name:"${name}"`,
+                            )}
                             badgeType={BadgeType.PRODUCT_BLOCK}
                         >
-                            {productBlock.name}
+                            {name}
                         </WfoProductBlockBadge>
                     ))}
                 </>
@@ -148,26 +174,35 @@ export const WfoProductBlocksPage = () => {
         resourceTypes: {
             columnType: ColumnType.DATA,
             label: t('resourceTypes'),
+            width: '700px',
             renderData: (resourceTypes) => (
                 <>
-                    {resourceTypes.map((resourceType, index) => (
+                    {resourceTypes.map(({ resourceType }, index) => (
                         <WfoProductBlockBadge
                             key={index}
+                            link={getQueryUrl(
+                                PATH_METADATA_RESOURCE_TYPES,
+                                `resourceType:"${resourceType}"`,
+                            )}
                             badgeType={BadgeType.RESOURCE_TYPE}
                         >
-                            {resourceType.resourceType}
+                            {resourceType}
                         </WfoProductBlockBadge>
                     ))}
                 </>
             ),
             renderDetails: (resourceTypes) => (
                 <EuiBadgeGroup gutterSize="s">
-                    {resourceTypes.map((resourceType, index) => (
+                    {resourceTypes.map(({ resourceType }, index) => (
                         <WfoProductBlockBadge
                             key={index}
+                            link={getQueryUrl(
+                                PATH_METADATA_RESOURCE_TYPES,
+                                `resourceType:"${resourceType}"`,
+                            )}
                             badgeType={BadgeType.RESOURCE_TYPE}
                         >
-                            {resourceType.resourceType}
+                            {resourceType}
                         </WfoProductBlockBadge>
                     ))}
                 </EuiBadgeGroup>
@@ -183,6 +218,7 @@ export const WfoProductBlocksPage = () => {
         createdAt: {
             columnType: ColumnType.DATA,
             label: t('createdAt'),
+            width: '120px',
             renderData: (date) => <WfoDateTime dateOrIsoString={date} />,
             renderDetails: parseIsoString(parseDateToLocaleDateTimeString),
             clipboardText: parseIsoString(parseDateToLocaleDateTimeString),
@@ -191,6 +227,7 @@ export const WfoProductBlocksPage = () => {
         endDate: {
             columnType: ColumnType.DATA,
             label: t('endDate'),
+            width: '120px',
             renderData: (date) => <WfoDateTime dateOrIsoString={date} />,
             renderDetails: parseIsoString(parseDateToLocaleDateTimeString),
             clipboardText: parseIsoString(parseDateToLocaleDateTimeString),

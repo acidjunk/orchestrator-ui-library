@@ -11,6 +11,7 @@ import {
 } from '@/components';
 import { getWfoSummaryCardsStyles } from '@/components/WfoSummary/styles';
 import { useOrchestratorTheme, useWithOrchestratorTheme } from '@/hooks';
+import { WfoCheckmarkCircleFill, WfoCubeFill, WfoXCircleFill } from '@/icons';
 
 export enum SummaryCardStatus {
     Success = 'Success',
@@ -21,11 +22,12 @@ export enum SummaryCardStatus {
 export type WfoSummaryCardProps = {
     headerTitle: string;
     headerValue: string | number;
-    headerStatus: SummaryCardStatus;
     listTitle: string;
     listItems: SummaryCardListItem[];
+    headerStatus?: SummaryCardStatus;
     button?: SummaryCardButtonConfig;
     isLoading?: boolean;
+    headerBadge?: Pick<WfoSummaryCardHeaderProps, 'iconType' | 'iconColor'>;
 };
 
 export const WfoSummaryCard: FC<WfoSummaryCardProps> = ({
@@ -36,6 +38,7 @@ export const WfoSummaryCard: FC<WfoSummaryCardProps> = ({
     headerTitle,
     listTitle,
     listItems,
+    headerBadge,
 }) => {
     const { theme } = useOrchestratorTheme();
     const { cardContainerStyle } = useWithOrchestratorTheme(
@@ -43,25 +46,55 @@ export const WfoSummaryCard: FC<WfoSummaryCardProps> = ({
     );
 
     const getIconTypeAndColorForHeaderStatus = (
-        status: SummaryCardStatus,
+        status?: SummaryCardStatus,
     ): Pick<WfoSummaryCardHeaderProps, 'iconType' | 'iconColor'> => {
         switch (status) {
             case SummaryCardStatus.Success:
                 return {
-                    iconType: 'checkInCircleFilled',
+                    iconType: () => (
+                        <WfoCheckmarkCircleFill
+                            width={32}
+                            height={32}
+                            color={theme.colors.ghost}
+                        />
+                    ),
                     iconColor: theme.colors.success,
                 };
             case SummaryCardStatus.Error:
                 return {
-                    iconType: 'error',
+                    iconType: () => (
+                        <WfoXCircleFill
+                            width={32}
+                            height={32}
+                            color={theme.colors.ghost}
+                        />
+                    ),
                     iconColor: theme.colors.danger,
                 };
             case SummaryCardStatus.Neutral:
-            default:
                 return {
-                    iconType: 'kubernetesPod',
+                    iconType: () => (
+                        <WfoCubeFill
+                            width={32}
+                            height={32}
+                            color={theme.colors.ghost}
+                        />
+                    ),
                     iconColor: theme.colors.primary,
                 };
+            default:
+                return (
+                    headerBadge ?? {
+                        iconType: () => (
+                            <WfoCubeFill
+                                width={32}
+                                height={32}
+                                color={theme.colors.ghost}
+                            />
+                        ),
+                        iconColor: theme.colors.primary,
+                    }
+                );
         }
     };
 

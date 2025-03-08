@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 import { EuiBadgeGroup } from '@elastic/eui';
 
 import {
+    PATH_METADATA_PRODUCTS,
     WfoDataSorting,
+    WfoFirstPartUUID,
     getPageIndexChangeHandler,
     getPageSizeChangeHandler,
 } from '@/components';
@@ -20,6 +22,7 @@ import {
     getDataSortHandler,
     getQueryStringHandler,
 } from '@/components';
+import { WfoMetadataDescriptionField } from '@/components/WfoMetadata/WfoMetadataDescriptionField';
 import { WfoAdvancedTable } from '@/components/WfoTable/WfoAdvancedTable/WfoAdvancedTable';
 import { WfoAdvancedTableColumnConfig } from '@/components/WfoTable/WfoAdvancedTable/types';
 import {
@@ -36,12 +39,14 @@ import {
     WorkflowsResponse,
     useGetWorkflowsQuery,
     useLazyGetWorkflowsQuery,
+    useUpdateWorkflowMutation,
 } from '@/rtk';
 import { mapRtkErrorToWfoError } from '@/rtk/utils';
 import type { GraphqlQueryVariables, WorkflowDefinition } from '@/types';
 import { BadgeType, SortOrder } from '@/types';
 import {
     getConcatenatedResult,
+    getQueryUrl,
     getQueryVariablesForExport,
     onlyUnique,
     parseDateToLocaleDateTimeString,
@@ -60,7 +65,7 @@ import {
 
 export type WorkflowListItem = Pick<
     WorkflowDefinition,
-    'name' | 'description' | 'target' | 'createdAt'
+    'workflowId' | 'name' | 'description' | 'target' | 'createdAt'
 > & {
     productTags: string[];
 };
@@ -80,6 +85,7 @@ export const WfoWorkflowsPage = () => {
     const getStoredTableConfig = useStoredTableConfig<WorkflowListItem>(
         METADATA_WORKFLOWS_TABLE_LOCAL_STORAGE_KEY,
     );
+    const [updateWorkflow] = useUpdateWorkflowMutation();
 
     useEffect(() => {
         const storedConfig = getStoredTableConfig();
@@ -103,6 +109,14 @@ export const WfoWorkflowsPage = () => {
         });
 
     const tableColumns: WfoAdvancedTableColumnConfig<WorkflowListItem> = {
+        workflowId: {
+            columnType: ColumnType.DATA,
+            label: t('workflowId'),
+            width: '90px',
+            renderData: (value) => <WfoFirstPartUUID UUID={value} />,
+            renderDetails: (value) => value,
+            renderTooltip: (value) => value,
+        },
         name: {
             columnType: ColumnType.DATA,
             label: t('name'),
@@ -111,21 +125,35 @@ export const WfoWorkflowsPage = () => {
                     {name}
                 </WfoProductBlockBadge>
             ),
+            width: '350px',
         },
         description: {
             columnType: ColumnType.DATA,
             label: t('description'),
-            width: '40%',
+            width: '700px',
+            renderData: (value, row) =>
+                value ? (
+                    <WfoMetadataDescriptionField
+                        onSave={(updatedNote) =>
+                            updateWorkflow({
+                                id: row.workflowId,
+                                description: updatedNote,
+                            })
+                        }
+                        description={value}
+                    />
+                ) : null,
         },
         target: {
             columnType: ColumnType.DATA,
             label: t('target'),
             renderData: (target) => <WfoWorkflowTargetBadge target={target} />,
+            width: '100px',
         },
         productTags: {
             columnType: ColumnType.DATA,
             label: t('productTags'),
-            width: '20%',
+            width: '300px',
             renderData: (productTags) => (
                 <>
                     {productTags
@@ -133,6 +161,10 @@ export const WfoWorkflowsPage = () => {
                         .map((productTag, index) => (
                             <WfoProductBlockBadge
                                 key={index}
+                                link={getQueryUrl(
+                                    PATH_METADATA_PRODUCTS,
+                                    `tag:"${productTag}"`,
+                                )}
                                 badgeType={BadgeType.PRODUCT_TAG}
                             >
                                 {productTag}
@@ -147,6 +179,10 @@ export const WfoWorkflowsPage = () => {
                         .map((productTag, index) => (
                             <WfoProductBlockBadge
                                 key={index}
+                                link={getQueryUrl(
+                                    PATH_METADATA_PRODUCTS,
+                                    `tag:"${productTag}"`,
+                                )}
                                 badgeType={BadgeType.PRODUCT_TAG}
                             >
                                 {productTag}
@@ -166,7 +202,7 @@ export const WfoWorkflowsPage = () => {
         createdAt: {
             columnType: ColumnType.DATA,
             label: t('createdAt'),
-            width: '15%',
+            width: '100px',
             renderData: (date) => <WfoDateTime dateOrIsoString={date} />,
             renderDetails: parseIsoString(parseDateToLocaleDateTimeString),
             clipboardText: parseIsoString(parseDateToLocaleDateTimeString),
@@ -216,7 +252,15 @@ export const WfoWorkflowsPage = () => {
     ): WorkflowListExportItem[] => {
         const { workflows } = workflowsResponse;
         return workflows.map(
-            ({ name, target, description, createdAt, products }) => ({
+            ({
+                workflowId,
+                name,
+                target,
+                description,
+                createdAt,
+                products,
+            }) => ({
+                workflowId,
                 name,
                 target,
                 description,

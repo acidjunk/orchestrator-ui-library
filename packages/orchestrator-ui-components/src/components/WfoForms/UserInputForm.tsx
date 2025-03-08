@@ -18,6 +18,7 @@ import React, { useContext, useState } from 'react';
 
 import invariant from 'invariant';
 import { JSONSchema6 } from 'json-schema';
+import { isObject } from 'lodash';
 import cloneDeep from 'lodash/cloneDeep';
 import get from 'lodash/get';
 import { useTranslations } from 'next-intl';
@@ -34,7 +35,7 @@ import {
 } from '@elastic/eui';
 
 import { ConfirmDialogHandler, ConfirmationDialogContext } from '@/contexts';
-import { useOrchestratorTheme } from '@/hooks';
+import { useOrchestratorTheme, useWfoErrorMonitoring } from '@/hooks';
 import { WfoPlayFill } from '@/icons';
 import { FormValidationError, ValidationError } from '@/types/forms';
 
@@ -393,17 +394,29 @@ function fillPreselection(form: JSONSchema6, router: NextRouter) {
         // ipvany preselect
         if (queryParams.prefix && queryParams.prefixlen) {
             if (form && form.properties.ip_prefix) {
-                const ipPrefixInput = form.properties
-                    .ip_prefix as UniformJSONSchemaProperty;
+                const ipPrefix = isObject(form.properties.ip_prefix)
+                    ? form.properties.ip_prefix
+                    : {};
+                const ipPrefixInput = {
+                    ...ipPrefix,
+                    uniforms: { prefixMin: 0 },
+                    default: {},
+                } as UniformJSONSchemaProperty;
                 if (!ipPrefixInput.uniforms) {
-                    ipPrefixInput.uniforms = {};
+                    ipPrefixInput.uniforms = { prefixMin: 0 };
                 }
                 ipPrefixInput.default = `${queryParams.prefix}/${queryParams.prefixlen}`;
                 ipPrefixInput.uniforms.prefixMin = parseInt(
-                    (queryParams.prefix_min as string) ??
-                        (queryParams.prefixlen as string),
+                    queryParams.prefixlen as string,
                     10,
                 );
+                return {
+                    ...form,
+                    properties: {
+                        ...form.properties,
+                        ip_prefix: ipPrefixInput,
+                    },
+                };
             }
         }
     }
@@ -429,6 +442,7 @@ export function WfoUserInputForm({
     const [processing, setProcessing] = useState<boolean>(false);
     const [nrOfValidationErrors, setNrOfValidationErrors] = useState<number>(0);
     const [rootErrors, setRootErrors] = useState<string[]>([]);
+    const { reportError } = useWfoErrorMonitoring();
 
     const openLeavePageDialog = (
         leaveAction: ConfirmDialogHandler,
@@ -457,7 +471,7 @@ export function WfoUserInputForm({
                 await validSubmit(userInput);
                 setProcessing(false);
                 return null;
-            } catch (error: unknown) {
+            } catch (error) {
                 setProcessing(false);
                 if (typeof error === 'object' && error !== null) {
                     const validationError = error as FormValidationError;
@@ -485,6 +499,9 @@ export function WfoUserInputForm({
                 }
                 // Let the error escape, so it can be caught by our own onerror handler instead of being silenced by uniforms
                 setTimeout(() => {
+                    reportError(
+                        new Error(`Forms error: ${JSON.stringify({ error })}`),
+                    );
                     throw error;
                 }, 0);
 

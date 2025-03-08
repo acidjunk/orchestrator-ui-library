@@ -7,6 +7,7 @@ To install and run the app:
 
 ```
 git clone git@github.com:workfloworchestrator/orchestrator-ui-library.git
+cd orchestrator-ui-library
 git submodule init
 git submodule update
 # Optionally: to update to the latest version of the git submodule instead of the ones currently pinned to the repo run
@@ -79,9 +80,17 @@ npm run packages:changeset
 
 Once the pull-request with a changeset file is merged to the main branch another PR is opened by the Changesets-bot to update the version numbers of the packages. When this pull request gets merged to main an automatic publish to NPM will be performed.
 
-## Releaseto NPM
+## Release to NPM
 
 Just merge the `Version Packages` PR into main, and the packages will be published to npm automatically.
+
+## Frontend-Backend versioning dependency
+
+This table shows the line up between the frontend orchestrator ui library and backend orchestrator-core. In the UI a check is added to validate whether the UI match a minimum release of the backend.
+
+| Frontend version | Minimum backend version | Changes                                                 |
+| ---------------- | ----------------------- | ------------------------------------------------------- |
+| 3.4.0            | 2.10.0                  | Endpoints in BE to modify description on metadata pages |
 
 ## Storybook
 

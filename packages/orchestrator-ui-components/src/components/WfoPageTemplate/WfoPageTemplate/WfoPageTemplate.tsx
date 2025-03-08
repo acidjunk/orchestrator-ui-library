@@ -1,13 +1,13 @@
-import React, { FC, ReactElement, ReactNode, useState } from 'react';
+import React, { FC, ReactElement, ReactNode, useRef, useState } from 'react';
 
-import { EuiPageTemplate } from '@elastic/eui';
 import type { EuiThemeColorMode } from '@elastic/eui';
-import { EuiSideNavItemType } from '@elastic/eui/src/components/side_nav/side_nav_types';
+import { EuiPageTemplate, EuiSideNavItemType } from '@elastic/eui';
 
-import { useOrchestratorTheme } from '../../../hooks/useOrchestratorTheme';
-import { WfoBreadcrumbs } from '../WfoBreadcrumbs';
-import { WfoPageHeader } from '../WfoPageHeader';
-import { WfoSidebar } from '../WfoSidebar';
+import { WfoBreadcrumbs, WfoPageHeader, WfoSidebar } from '@/components';
+import { useWithOrchestratorTheme } from '@/hooks';
+
+import { ContentContextProvider } from './ContentContext';
+import { getPageTemplateStyles } from './styles';
 
 export interface WfoPageTemplateProps {
     getAppLogo: (navigationHeight: number) => ReactElement;
@@ -24,47 +24,50 @@ export const WfoPageTemplate: FC<WfoPageTemplateProps> = ({
     overrideMenuItems,
     onThemeSwitch,
 }) => {
-    const { theme, multiplyByBaseUnit } = useOrchestratorTheme();
+    const { getSidebarStyle, NAVIGATION_HEIGHT } = useWithOrchestratorTheme(
+        getPageTemplateStyles,
+    );
+
     const [isSideMenuVisible, setIsSideMenuVisible] = useState(true);
-    const navigationHeight = multiplyByBaseUnit(3);
+
+    const headerRowRef = useRef<HTMLDivElement>(null);
 
     return (
         <>
             <WfoPageHeader
                 getAppLogo={getAppLogo}
-                navigationHeight={navigationHeight}
+                navigationHeight={NAVIGATION_HEIGHT}
                 onThemeSwitch={onThemeSwitch}
             />
-
             {/* Sidebar and content area */}
             <EuiPageTemplate
                 panelled={false}
                 grow={false}
                 contentBorder={false}
-                minHeight={`calc(100vh - ${navigationHeight}px)`}
+                minHeight={`calc(100vh - ${NAVIGATION_HEIGHT}px)`}
                 restrictWidth={false}
             >
                 {isSideMenuVisible && (
                     <EuiPageTemplate.Sidebar
-                        css={{
-                            backgroundColor: theme.colors.body,
-                        }}
+                        css={getSidebarStyle(NAVIGATION_HEIGHT)}
                     >
                         <WfoSidebar overrideMenuItems={overrideMenuItems} />
                     </EuiPageTemplate.Sidebar>
                 )}
-                <EuiPageTemplate.Section
-                    css={{
-                        backgroundColor: theme.colors.emptyShade,
-                    }}
+
+                <ContentContextProvider
+                    contentRef={headerRowRef}
+                    navigationHeight={NAVIGATION_HEIGHT}
                 >
-                    <WfoBreadcrumbs
-                        handleSideMenuClick={() =>
-                            setIsSideMenuVisible((prevState) => !prevState)
-                        }
-                    />
-                    {children}
-                </EuiPageTemplate.Section>
+                    <EuiPageTemplate.Section>
+                        <WfoBreadcrumbs
+                            handleSideMenuClick={() =>
+                                setIsSideMenuVisible((prevState) => !prevState)
+                            }
+                        />
+                        {children}
+                    </EuiPageTemplate.Section>
+                </ContentContextProvider>
             </EuiPageTemplate>
         </>
     );

@@ -13,11 +13,7 @@ import {
     EuiText,
 } from '@elastic/eui';
 
-import {
-    PATH_SUBSCRIPTIONS,
-    WfoProductBlockKeyValueRow,
-    WfoValueCell,
-} from '@/components';
+import { WfoProductBlockKeyValueRow, WfoValueCell } from '@/components';
 import { useWithOrchestratorTheme } from '@/hooks';
 import { ProductBlockInstance, Subscription } from '@/types';
 import { getFirstUuidPart } from '@/utils';
@@ -32,13 +28,15 @@ import { getStyles } from './styles';
 interface WfoSubscriptionProductBlockProps {
     productBlock: ProductBlockInstance;
     subscriptionId: Subscription['subscriptionId'];
+    subscriptionPath: string;
 }
 
-export const HIDDEN_KEYS = ['title', 'name', 'label'];
+export const HIDDEN_KEYS = ['title', 'name', 'label', 'inUseByIds'];
 
 export const WfoSubscriptionProductBlock = ({
     productBlock,
     subscriptionId,
+    subscriptionPath,
 }: WfoSubscriptionProductBlockProps) => {
     const t = useTranslations('subscriptions.detail');
     const {
@@ -139,7 +137,7 @@ export const WfoSubscriptionProductBlock = ({
                                             value={
                                                 <>
                                                     <a
-                                                        href={`${PATH_SUBSCRIPTIONS}/${ownerSubscriptionId}`}
+                                                        href={`${subscriptionPath}/${ownerSubscriptionId}`}
                                                         target="_blank"
                                                     >
                                                         {

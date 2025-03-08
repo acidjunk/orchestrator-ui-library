@@ -1,5 +1,156 @@
 # @orchestrator-ui/orchestrator-ui-components
 
+## 3.4.0
+
+### Minor Changes
+
+-   2389b16: 808 - Support for metadata description modify - requires orchestrator core 2.10.0
+
+## 3.3.3
+
+### Patch Changes
+
+-   62d16da: 1709 Replace default icons with SURF icons
+
+## 3.3.2
+
+### Patch Changes
+
+-   59230ea: inline edit for description of metadata pages
+
+## 3.3.1
+
+### Patch Changes
+
+-   56bdc1d: 1705 Added prop for custom icon summary card
+
+## 3.3.0
+
+### Minor Changes
+
+-   0476c1d: Adds an asteriks to every single word search
+-   937c8d6: Adds customer description edit forms
+-   1bb8c3c: Added support for displaying software versions in hamburger menu
+
+## 3.2.0
+
+### Minor Changes
+
+-   2175530: 1704 - Adjustments to assist in overriding the standard menu items: Using more descriptive id values. Adds reusable divider menu item
+
+## 3.1.1
+
+### Patch Changes
+
+-   e838f80: 330 Making timeline in process detail pages sticky to the top of the screen. Introduces a useContentRef hook to refer to the scrollable content div in the pagetemplate
+
+## 3.1.0
+
+### Minor Changes
+
+-   98c1716: Fix notes not updating when changing pages, fix cancel button resetting note to older value
+-   c19dacd: 1662 Make the navbar fixed when scrolling and notify user for failing websocket there.
+
+## 3.0.3
+
+### Patch Changes
+
+-   bba111c: Add missing subscription id to start process form
+
+## 3.0.2
+
+### Patch Changes
+
+-   a4492fd: Fix 400 error in create lir prefix form
+-   4baeff5: 1509 Remove toast for failed websocket connection that covers the next and back buttons in the forms.
+
+## 3.0.1
+
+### Patch Changes
+
+-   4bd9869: 1146 Allow workflow to start with additional prefilled variables - LIR prefixes page
+
+## 3.0.0
+
+### Major Changes
+
+-   f6315dd: 1479:
+
+    -   csvDownload (Breaking change): Changed the parameters of initiateCsvFileDownload for directly exporting data to CSV.
+    -   GroupedTable: The table has a small header with a button "Collapse / Expand", this can now be overridden.
+    -   Introduced a utility type to help ensuring that all the props of an object will be of type "string". Typically useful for the csvDownload functionality
+
+    Changes to be made by the consumer of the library:
+    The function `initiateCsvFileDownload` now requires 3 parameters instead of 2. The new parameter is `keyOrder` and is an array of strings representing the desired order of the columns in the CSV file. See example below for the placement.
+
+    Before:
+
+    ```javascript
+    initiateCsvFileDownload(data, fileName);
+    ```
+
+    After:
+
+    ```javascript
+    initiateCsvFileDownload(data, keyOrder, fileName);
+    ```
+
+### Patch Changes
+
+-   19d1d88: Enables prefilling of prefixes
+-   bbf8983: 1623 Changes the colors of the WfoInsyncIcon to make the no-in-sync state more prominent
+-   eb45e6b: 289 Metadata page: making related product blocks, resource types and product tags badges clickable. It will update the search query to show that specific item.
+
+## 2.15.0
+
+### Minor Changes
+
+-   c7eaf69: 1620 Add subscriptionPath option for WfoRelatedSubscriptions, WfoSubscriptionDetailTree
+
+### Patch Changes
+
+-   79d9133: 1569 Some non-functional tweaks on the table components: Adds classNames and adds a Fragment component in a mapper function
+-   2cab3b2: Add summary field to Object field type in AutoFieldLoader
+
+## 2.14.1
+
+### Patch Changes
+
+-   7f972a1: Fixes calling getFirstUuidPart with null value
+-   86b504f: Feat: refactor IPPREFIX table #2143
+
+## 2.14.0
+
+### Minor Changes
+
+-   0172be2: Adds resizable table columns
+
+## 2.13.0
+
+### Minor Changes
+
+-   195a951: 692 Adds WfoErrorMonitoringProvider for tracing purposes. It exposes 2 methods via the useWfoErrorMonitoring hook. These reporting functions are used within the component library. To start using it, the WfoErrorMonitoringProvider needs to be added to the \_app.tsx and the errorMonitoringHandler needs to be implemented.
+
+### Patch Changes
+
+-   95de1e8: 1552 Remove last line of workflow timeline card
+
+## 2.12.0
+
+### Minor Changes
+
+-   6e4d726: 1560 Table Header: for narrow columns, moving the sort icons as much as possible to the right
+-   cd0d38f: 1556 Adds inline note editing for the subscription list page
+
+### Patch Changes
+
+-   cdb9c83: 1530 Navigate to task list page when clicking on the tasks count icon
+-   87540ac: 1577 Fixes uncheckable checkbox (only the label was clickable)
+-   c592740: 1536 Hides inUseByIds in the list of product block instance values
+-   88a9db4: 1561 Fixes double copy icon in subscription detail page at the in-use-by-subscriptions section
+-   d39017a: Fix WfoInlineNoteEdit showing cached value from the previous page on the next one
+-   a442a0b: new column width and customer fullname hidden
+
 ## 2.11.1
 
 ### Patch Changes

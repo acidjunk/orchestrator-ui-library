@@ -6,11 +6,11 @@ import {
     SubscriptionKeyValueBlock,
     WfoCustomerDescriptionsField,
     WfoInSyncField,
-    WfoInlineNoteEdit,
+    WfoSubscriptionDetailNoteEdit,
     WfoSubscriptionStatusBadge,
 } from '@/components';
 import { SubscriptionDetail } from '@/types';
-import { formatDate, toOptionalArrayEntry } from '@/utils';
+import { formatDate } from '@/utils';
 
 interface WfoSubscriptionDetailSectionProps {
     isFetching: boolean;
@@ -23,9 +23,6 @@ export const WfoSubscriptionDetailSection = ({
 }: WfoSubscriptionDetailSectionProps) => {
     const t = useTranslations('subscriptions.detail');
 
-    const hasCustomerDescriptions =
-        subscriptionDetail.customerDescriptions.length > 0;
-
     const {
         subscriptionId,
         product,
@@ -35,7 +32,6 @@ export const WfoSubscriptionDetailSection = ({
         status,
         customer,
         customerDescriptions,
-        note,
     } = subscriptionDetail;
 
     const subscriptionDetailBlockData = [
@@ -88,23 +84,22 @@ export const WfoSubscriptionDetailSection = ({
                     : '-',
             textToCopy: customer?.customerId,
         },
-        ...toOptionalArrayEntry(
-            {
-                key: t('customerDescriptions'),
-                value: (
-                    <WfoCustomerDescriptionsField
-                        customerDescriptions={customerDescriptions}
-                    />
-                ),
-            },
-            hasCustomerDescriptions,
-        ),
+        {
+            key: t('customerDescriptions'),
+            value: (
+                <WfoCustomerDescriptionsField
+                    customerDescriptions={customerDescriptions}
+                    subscriptionCustomerId={customer?.customerId}
+                    subscriptionId={subscriptionId}
+                />
+            ),
+        },
         {
             key: t('note'),
             value: (
-                <WfoInlineNoteEdit
+                <WfoSubscriptionDetailNoteEdit
                     subscriptionId={subscriptionId}
-                    value={note}
+                    onlyShowOnHover={true}
                 />
             ),
         },

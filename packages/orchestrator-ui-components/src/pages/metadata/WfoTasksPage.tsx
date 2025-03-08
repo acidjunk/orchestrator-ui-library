@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { EuiBadgeGroup } from '@elastic/eui';
 
 import {
+    PATH_METADATA_PRODUCTS,
+    WfoFirstPartUUID,
     WfoWorkflowTargetBadge,
     getPageIndexChangeHandler,
     getPageSizeChangeHandler,
@@ -19,6 +21,7 @@ import {
 } from '@/components';
 import { getDataSortHandler, getQueryStringHandler } from '@/components';
 import { WfoDateTime } from '@/components/WfoDateTime/WfoDateTime';
+import { WfoMetadataDescriptionField } from '@/components/WfoMetadata/WfoMetadataDescriptionField';
 import { WfoAdvancedTable } from '@/components/WfoTable/WfoAdvancedTable';
 import { WfoAdvancedTableColumnConfig } from '@/components/WfoTable/WfoAdvancedTable/types';
 import {
@@ -31,11 +34,18 @@ import {
     useShowToastMessage,
     useStoredTableConfig,
 } from '@/hooks';
-import { TasksResponse, useGetTasksQuery, useLazyGetTasksQuery } from '@/rtk';
+import {
+    TasksResponse,
+    useGetTasksQuery,
+    useLazyGetTasksQuery,
+    useUpdateWorkflowMutation,
+} from '@/rtk';
 import { mapRtkErrorToWfoError } from '@/rtk/utils';
 import type { GraphqlQueryVariables, TaskDefinition } from '@/types';
 import { BadgeType, SortOrder } from '@/types';
 import {
+    getConcatenatedResult,
+    getQueryUrl,
     getQueryVariablesForExport,
     onlyUnique,
     parseDateToLocaleDateTimeString,
@@ -54,7 +64,7 @@ import {
 
 export type TaskListItem = Pick<
     TaskDefinition,
-    'name' | 'description' | 'target' | 'createdAt'
+    'workflowId' | 'name' | 'description' | 'target' | 'createdAt'
 > & {
     productTags: string[];
 };
@@ -67,13 +77,12 @@ export const WfoTasksPage = () => {
     const t = useTranslations('metadata.tasks');
     const tError = useTranslations('errors');
     const { showToastMessage } = useShowToastMessage();
-
     const [tableDefaults, setTableDefaults] =
         useState<StoredTableConfig<TaskListItem>>();
-
     const getStoredTableConfig = useStoredTableConfig<TaskListItem>(
         METADATA_TASKS_TABLE_LOCAL_STORAGE_KEY,
     );
+    const [updateWorkflow] = useUpdateWorkflowMutation();
 
     useEffect(() => {
         const storedConfig = getStoredTableConfig();
@@ -97,6 +106,14 @@ export const WfoTasksPage = () => {
         });
 
     const tableColumns: WfoAdvancedTableColumnConfig<TaskListItem> = {
+        workflowId: {
+            columnType: ColumnType.DATA,
+            label: t('workflowId'),
+            width: '90px',
+            renderData: (value) => <WfoFirstPartUUID UUID={value} />,
+            renderDetails: (value) => value,
+            renderTooltip: (value) => value,
+        },
         name: {
             columnType: ColumnType.DATA,
             label: t('name'),
@@ -105,21 +122,49 @@ export const WfoTasksPage = () => {
                     {name}
                 </WfoProductBlockBadge>
             ),
+            width: '300px',
         },
         description: {
             columnType: ColumnType.DATA,
             label: t('description'),
-            width: '40%',
+            width: '700px',
+            renderData: (value, row) =>
+                value ? (
+                    <WfoMetadataDescriptionField
+                        onSave={(updatedNote) =>
+                            updateWorkflow({
+                                id: row.workflowId,
+                                description: updatedNote,
+                            })
+                        }
+                        description={value}
+                    />
+                ) : null,
         },
+
+        // description: {
+        //     columnType: ColumnType.DATA,
+        //     label: t('description'),
+        //     width: '450px',
+        //     renderData: (value, row) =>
+        //         value ? (
+        //             <WfoWorkflowDescriptionField
+        //                 workflow_id={row.workflowId}
+        //                 description={value}
+        //             />
+        //         ) : null,
+        // },
+
         target: {
             columnType: ColumnType.DATA,
             label: t('target'),
             renderData: (target) => <WfoWorkflowTargetBadge target={target} />,
+            width: '100px',
         },
         productTags: {
             columnType: ColumnType.DATA,
             label: t('productTags'),
-            width: '20%',
+            width: '250px',
             renderData: (productTags) => (
                 <>
                     {productTags
@@ -127,6 +172,10 @@ export const WfoTasksPage = () => {
                         .map((productTag, index) => (
                             <WfoProductBlockBadge
                                 key={index}
+                                link={getQueryUrl(
+                                    PATH_METADATA_PRODUCTS,
+                                    `tag:"${productTag}"`,
+                                )}
                                 badgeType={BadgeType.PRODUCT_TAG}
                             >
                                 {productTag}
@@ -141,6 +190,10 @@ export const WfoTasksPage = () => {
                         .map((productTag, index) => (
                             <WfoProductBlockBadge
                                 key={index}
+                                link={getQueryUrl(
+                                    PATH_METADATA_PRODUCTS,
+                                    `tag:"${productTag}"`,
+                                )}
                                 badgeType={BadgeType.PRODUCT_TAG}
                             >
                                 {productTag}
@@ -160,7 +213,7 @@ export const WfoTasksPage = () => {
         createdAt: {
             columnType: ColumnType.DATA,
             label: t('createdAt'),
-            width: '15%',
+            width: '150px',
             renderData: (date) => <WfoDateTime dateOrIsoString={date} />,
             renderDetails: parseIsoString(parseDateToLocaleDateTimeString),
             clipboardText: parseIsoString(parseDateToLocaleDateTimeString),
@@ -209,16 +262,21 @@ export const WfoTasksPage = () => {
     ): TaskListExportItem[] => {
         const { tasks } = tasksResponse;
         return tasks.map(
-            ({ name, target, description, createdAt, products }) => {
-                const uniqueProducts = products
-                    .map((product) => product.tag)
-                    .filter(onlyUnique);
+            ({
+                workflowId,
+                name,
+                target,
+                description,
+                createdAt,
+                products,
+            }) => {
                 return {
+                    workflowId,
                     name,
                     target,
                     description,
                     createdAt,
-                    productTags: uniqueProducts.join(' - '),
+                    productTags: getConcatenatedResult(products, ['tag']),
                 };
             },
         );

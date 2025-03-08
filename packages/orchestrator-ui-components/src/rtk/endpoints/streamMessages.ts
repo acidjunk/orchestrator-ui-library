@@ -2,11 +2,8 @@ import { debounce } from 'lodash';
 import { getSession } from 'next-auth/react';
 
 import type { WfoSession } from '@/hooks';
-import { addToastMessage } from '@/rtk/slices/toastMessages';
 import type { RootState } from '@/rtk/store';
-import { ToastTypes } from '@/types';
 import { CacheTag, CacheTagType } from '@/types';
-import { getToastMessage } from '@/utils/getToastMessage';
 
 import { orchestratorApi } from '../api';
 
@@ -53,7 +50,7 @@ const streamMessagesApi = orchestratorApi.injectEndpoints({
     endpoints: (build) => ({
         streamMessages: build.query<boolean, void>({
             queryFn: () => {
-                return { data: false };
+                return { data: true };
             },
             async onCacheEntryAdded(
                 _,
@@ -66,12 +63,6 @@ const streamMessagesApi = orchestratorApi.injectEndpoints({
                 },
             ) {
                 const cleanUp = () => {
-                    const message = getToastMessage(
-                        ToastTypes.ERROR,
-                        'Connection to the server was lost. Please click the websocket icon or refresh the page to reconnect.',
-                        'WebSocket closed',
-                    );
-                    dispatch(addToastMessage(message));
                     clearInterval(pingInterval);
                     updateCachedData(() => false);
                 };
@@ -97,7 +88,7 @@ const streamMessagesApi = orchestratorApi.injectEndpoints({
                 const getDebounce = (delay: number) => {
                     return debounce(() => {
                         webSocket.close();
-                        // note: websocket.close doesnt trigger the onclose handler when losing
+                        // note: websocket.close doesn't trigger the onClose handler when closing
                         // internet connection so we call the cleanup event from here to be sure it's called
                         cleanUp();
                     }, delay);

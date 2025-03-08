@@ -16,17 +16,20 @@ import {
     getPageIndexChangeHandler,
     getPageSizeChangeHandler,
 } from '@/components';
+import { WfoSubscriptionNoteEdit } from '@/components/WfoInlineNoteEdit/WfoSubscriptionNoteEdit';
 import { WfoAdvancedTable } from '@/components/WfoTable/WfoAdvancedTable';
 import { WfoAdvancedTableColumnConfig } from '@/components/WfoTable/WfoAdvancedTable/types';
 import { ColumnType } from '@/components/WfoTable/WfoTable';
 import { mapSortableAndFilterableValuesToTableColumnConfig } from '@/components/WfoTable/WfoTable/utils';
 import { DataDisplayParams, useShowToastMessage } from '@/hooks';
+import { UseQuery } from '@/rtk';
 import {
+    SubscriptionListResponse,
     useGetSubscriptionListQuery,
     useLazyGetSubscriptionListQuery,
 } from '@/rtk/endpoints/subscriptionList';
 import { mapRtkErrorToWfoError } from '@/rtk/utils';
-import { GraphqlQueryVariables, SortOrder } from '@/types';
+import { GraphqlQueryVariables, SortOrder, Subscription } from '@/types';
 import {
     getQueryVariablesForExport,
     getTypedFieldFromObject,
@@ -149,6 +152,21 @@ export const WfoSubscriptionsList: FC<WfoSubscriptionsListProps> = ({
             note: {
                 columnType: ColumnType.DATA,
                 label: t('note'),
+                renderData: (cellValue, row) => {
+                    return (
+                        <WfoSubscriptionNoteEdit
+                            queryVariables={graphqlQueryVariables}
+                            subscriptionId={row.subscriptionId}
+                            onlyShowOnHover={true}
+                            useQuery={
+                                useGetSubscriptionListQuery as UseQuery<
+                                    SubscriptionListResponse,
+                                    Subscription
+                                >
+                            }
+                        />
+                    );
+                },
             },
             metadata: {
                 columnType: ColumnType.DATA,
