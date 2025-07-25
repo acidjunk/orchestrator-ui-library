@@ -88,27 +88,34 @@ const CustomHits = ({closePopover}: CustomHitsProps) => {
                     No results found.
                 </EuiText>
             )}
-            {filteredHits.map((searchHit: VectorSearchHit) => (
-                <Link key={searchHit.id} href={`/subscriptions/${searchHit.id}`} legacyBehavior>
-                    <a
-                        onClick={closePopover}
-                        style={{textDecoration: 'none'}}
-                    >
-                        <EuiPanel paddingSize="s" hasShadow={false} color="subdued">
-                            <EuiText size="s">
-                                <strong>
-                                    {searchHit.customer_id +' | '+ searchHit.shop.customer.billing_contact_name }
-                                </strong>
-                                <br/>
-                                <span>
-                                    {searchHit.description}
-                                </span>
-                            </EuiText>
-                        </EuiPanel>
-                        <EuiSpacer size="xs"/>
-                    </a>
-                </Link>
-            ))}
+            {filteredHits.map((searchHit: VectorSearchHit) => {
+                // Skip rendering if required fields are missing
+                if (!searchHit?.id || !searchHit?.customer_id) {
+                    return null;
+                }
+
+                return (
+                    <Link key={searchHit.id} href={`/subscriptions/${searchHit.id}`} legacyBehavior>
+                        <a
+                            onClick={closePopover}
+                            style={{textDecoration: 'none'}}
+                        >
+                            <EuiPanel paddingSize="s" hasShadow={false} color="subdued">
+                                <EuiText size="s">
+                                    <strong>
+                                        {searchHit.customer_id + ' | ' + (searchHit.shop?.customer?.billing_contact_name || 'N/A')}
+                                    </strong>
+                                    <br/>
+                                    <span>
+                                        {searchHit.description || 'No description'}
+                                    </span>
+                                </EuiText>
+                            </EuiPanel>
+                            <EuiSpacer size="xs"/>
+                        </a>
+                    </Link>
+                );
+            })}
         </>
     );
 };
