@@ -606,4 +606,39 @@ export enum CacheTagType {
 }
 export type CacheTag = { type: CacheTagType; id?: string };
 
+export interface TypesenseConfig {
+    host: string;
+    port: number;
+    protocol: 'http' | 'https';
+    apiKey: string;
+}
+
+export interface TypesenseSearchParameters {
+    query_by: string;
+    exclude_fields: string[];
+    per_page: number;
+    num_typos: number;
+    exhaustive_search: boolean;
+    prioritize_exact_match: boolean;
+    rerank_hybrid_matches: boolean;
+    vector_query: string;
+}
+
+export interface TypesenseSearchFilterResultsParameters{
+    vector_distance: number;
+}
+
+export interface TypesenseSchema {
+    fields: Array<{
+        name: string;
+        type: string;
+    }>;
+}
+
+export interface TypesenseSearchClient {
+    // Add specific methods you use from the search client
+    search: (params: any) => Promise<any>; // Replace 'any' with actual types from typesense
+}
+
+
 export const CACHETAG_TYPE_LIST = 'LIST';

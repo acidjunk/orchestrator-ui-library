@@ -31,6 +31,8 @@ import { ColorModes } from '@/types';
 
 import { WfoHamburgerMenu } from './WfoHamburgerMenu';
 
+import SearchBox from '@/components/SearchBox/SearchBox';
+
 export interface WfoPageHeaderProps {
     // todo: should be part of theme!
     navigationHeight: number;
@@ -67,7 +69,18 @@ export const WfoPageHeader: FC<WfoPageHeaderProps> = ({
                     <WfoEnvironmentBadge />
                 </EuiHeaderSectionItem>
             </EuiHeaderSection>
-
+            <EuiHeaderSection
+                style={{
+                    flexGrow: 1,
+                    margin: '0 10%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                }}
+            >
+                <EuiHeaderSectionItem css={{width: '100%'}}>
+                    <SearchBox/>
+                </EuiHeaderSectionItem>
+            </EuiHeaderSection>
             <EuiHeaderSection>
                 <EuiHeaderSectionItem>
                     <EuiBadgeGroup css={{ marginRight: multiplyByBaseUnit(1) }}>

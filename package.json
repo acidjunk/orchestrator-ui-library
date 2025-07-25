@@ -25,5 +25,11 @@
         "apps/*",
         "packages/*"
     ],
-    "packageManager": "npm@10.9.0"
+    "packageManager": "npm@10.9.0",
+    "dependencies": {
+        "instantsearch.css": "^8.5.1",
+        "react-instantsearch-dom": "^6.40.4",
+        "typesense": "^2.1.0-12",
+        "typesense-instantsearch-adapter": "^2.9.0"
+    }
 }
