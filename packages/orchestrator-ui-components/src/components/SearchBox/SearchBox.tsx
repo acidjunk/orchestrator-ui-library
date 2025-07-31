@@ -16,7 +16,7 @@ import {
 } from 'react-instantsearch';
 
 import {SearchHit, filterHits} from '@/utils/filterTypesenseHits';
-import {typesenseSearchVectorDistanceFilter} from '@/config/typesenseConfiguration';
+import {typesenseSearchParameters, typesenseSearchVectorDistanceFilter} from '@/config/typesenseConfiguration';
 import {useTypesenseAdapter} from '@/hooks/useTypesenseAdapter';
 import {debounce} from 'lodash';
 
@@ -145,7 +145,7 @@ const SearchBox = () => {
             indexName="subscriptions"
             searchClient={searchClient}
         >
-            <Configure hitsPerPage={6}/>
+            <Configure hitsPerPage={typesenseSearchParameters.per_page}/>
             <EuiPopover
                 isOpen={isPopoverOpen}
                 closePopover={() => setIsPopoverOpen(false)}
