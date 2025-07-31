@@ -1,44 +1,60 @@
-import type {BaseHit} from "instantsearch.js";
+import type {BaseHit, Hit} from "instantsearch.js";
 
-/**
- * Represents a search hit with vector distance information
- */
-export interface VectorSearchHit extends BaseHit
-{
+
+export interface SearchHit extends Hit<BaseHit> {
     id: string;
     vector_distance?: number;
+    rank_fusion_score?: number;
     customer_id: string;
     insync: string;
     description: string;
 }
 
-/**
- * Filter function type for vector-based search results
- */
-export type VectorFilterFunction = (hit: VectorSearchHit) => boolean;
+
+export type SearchHitFilterFunction = (hit: SearchHit) => boolean;
+
+interface SearchFilters {
+    vectorDistanceThreshold?: number;
+    rankFusionScoreThreshold?: number;
+}
 
 /**
- * Creates a vector distance filter function with a configurable threshold
- * @param threshold - Maximum allowed vector distance (0 to 1)
+ * Creates a combined filter function that checks both vector distance and rank fusion score
+ * @param filters - Object containing thresholds for both vector distance and rank fusion score
  * @returns A filter function that can be used with Array.filter()
  */
-export const createVectorDistanceFilter = (threshold: number): VectorFilterFunction => {
-    return (hit: VectorSearchHit): boolean => {
-        const distance = hit?.vector_distance;
-        return distance === undefined || distance <= threshold;
+export const createCombinedFilter = (filters: SearchFilters): SearchHitFilterFunction => {
+    return (hit: SearchHit): boolean => {
+        // Check vector distance if threshold is provided
+        if (filters.vectorDistanceThreshold !== undefined) {
+            const distance = hit?.vector_distance;
+            if (distance !== undefined && distance > filters.vectorDistanceThreshold) {
+                return false;
+            }
+        }
+
+        // Check rank fusion score if threshold is provided
+        if (filters.rankFusionScoreThreshold !== undefined) {
+            const score = hit?.rank_fusion_score;
+            if (score !== undefined && score < filters.rankFusionScoreThreshold) {
+                return false;
+            }
+        }
+
+        return true;
     };
 };
 
 /**
- * Filters an array of hits based on vector distance
+ * Filters an array of hits based on both vector distance and rank fusion score
  * @param hits - Array of search hits to filter
- * @param threshold - Maximum allowed vector distance (0 to 1)
+ * @param filters - Object containing thresholds for filtering
  * @returns Filtered array of hits
  */
-export const filterHitsByVectorDistance = (
-    hits: VectorSearchHit[],
-    threshold: number
-): VectorSearchHit[] => {
-    const filterFn = createVectorDistanceFilter(threshold);
+export const filterHits = (
+    hits: SearchHit[],
+    filters: SearchFilters
+): SearchHit[] => {
+    const filterFn = createCombinedFilter(filters);
     return hits.filter(filterFn);
 };

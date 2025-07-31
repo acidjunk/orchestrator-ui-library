@@ -12,27 +12,21 @@ import {
     Configure,
     useSearchBox,
     useHits,
+    Highlight
 } from 'react-instantsearch';
 
-import { VectorSearchHit, filterHitsByVectorDistance } from '@/utils/filterTypesenseHits';
-import { getEnvironmentVariables } from '@/utils/getEnvironmentVariables';
+import {SearchHit, filterHits} from '@/utils/filterTypesenseHits';
+import {typesenseSearchVectorDistanceFilter} from '@/config/typesenseConfiguration';
 import {useTypesenseAdapter} from '@/hooks/useTypesenseAdapter';
-import { debounce } from 'lodash';
-import type {BaseHit} from "instantsearch.js";
-
-const env = getEnvironmentVariables<{ NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD: string }>([
-    'NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD'
-]);
-
-const vectorDistanceThreshold = parseFloat(env.NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD || '0.2');
+import {debounce} from 'lodash';
 
 interface CustomSearchBoxProps {
     onFocus: () => void;
     onBlur: () => void;
 }
 
-const CustomSearchBox: React.FC<CustomSearchBoxProps> = ({ onFocus, onBlur }) => {
-    const { query, refine } = useSearchBox();
+const CustomSearchBox: React.FC<CustomSearchBoxProps> = ({onFocus, onBlur}) => {
+    const {query, refine} = useSearchBox();
     const [inputValue, setInputValue] = useState(query);
 
     const debouncedRefine = useMemo(
@@ -68,7 +62,6 @@ const CustomSearchBox: React.FC<CustomSearchBoxProps> = ({ onFocus, onBlur }) =>
 };
 
 
-
 interface CustomHitsProps {
     closePopover: () => void;
 }
@@ -76,10 +69,10 @@ interface CustomHitsProps {
 
 // Custom Hits using EUI
 const CustomHits = ({closePopover}: CustomHitsProps) => {
-    const {items} = useHits<VectorSearchHit>();
-
-    // Apply vector distance filtering
-    const filteredHits = filterHitsByVectorDistance(items, vectorDistanceThreshold);
+    const {items} = useHits<SearchHit>();
+    const filteredHits = filterHits(items, {
+        rankFusionScoreThreshold: typesenseSearchVectorDistanceFilter.rank_fusion_score
+    });
 
     return (
         <>
@@ -88,14 +81,13 @@ const CustomHits = ({closePopover}: CustomHitsProps) => {
                     No results found.
                 </EuiText>
             )}
-            {filteredHits.map((searchHit: VectorSearchHit) => {
-                // Skip rendering if required fields are missing
-                if (!searchHit?.id || !searchHit?.customer_id) {
+            {filteredHits.map((hit: SearchHit) => {
+                if (!hit?.id || !hit?.customer_id) {
                     return null;
                 }
 
                 return (
-                    <Link key={searchHit.id} href={`/subscriptions/${searchHit.id}`} legacyBehavior>
+                    <Link key={hit.id} href={`/subscriptions/${hit.id}`} legacyBehavior>
                         <a
                             onClick={closePopover}
                             style={{textDecoration: 'none'}}
@@ -103,11 +95,19 @@ const CustomHits = ({closePopover}: CustomHitsProps) => {
                             <EuiPanel paddingSize="s" hasShadow={false} color="subdued">
                                 <EuiText size="s">
                                     <strong>
-                                        {searchHit.customer_id + ' | ' + (searchHit.shop?.customer?.billing_contact_name || 'N/A')}
+                                        <Highlight attribute="customer_id" hit={hit}/>
+                                        {' | '}
+                                        <Highlight
+                                            attribute="shop.customer.billing_contact_name"
+                                            hit={hit}
+                                        />
                                     </strong>
                                     <br/>
                                     <span>
-                                        {searchHit.description || 'No description'}
+                                        <Highlight
+                                            attribute="description"
+                                            hit={hit}
+                                        />
                                     </span>
                                 </EuiText>
                             </EuiPanel>
@@ -119,11 +119,6 @@ const CustomHits = ({closePopover}: CustomHitsProps) => {
         </>
     );
 };
-
-interface SearchFunctionParams {
-    query: string;
-    refine: (query: string) => void;
-}
 
 // Main component
 const SearchBox = () => {

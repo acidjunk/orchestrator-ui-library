@@ -7,7 +7,8 @@ interface SearchEnvVars {
     NEXT_PUBLIC_TYPESENSE_PORT: string;
     NEXT_PUBLIC_TYPESENSE_PROTOCOL: string;
     NEXT_PUBLIC_TYPESENSE_API_KEY: string;
-    NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD: string;
+    NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD: number;
+    NEXT_PUBLIC_RANK_FUSION_SCORE: number;
 }
 
 // Get environment variables
@@ -16,7 +17,8 @@ const env = getEnvironmentVariables<SearchEnvVars>([
     'NEXT_PUBLIC_TYPESENSE_PORT',
     'NEXT_PUBLIC_TYPESENSE_PROTOCOL',
     'NEXT_PUBLIC_TYPESENSE_API_KEY',
-    'NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD'
+    'NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD',
+    'NEXT_PUBLIC_RANK_FUSION_SCORE'
 ]);
 
 // Default configuration
@@ -27,12 +29,14 @@ export const typesenseConfig: TypesenseConfig = {
     apiKey: env.NEXT_PUBLIC_TYPESENSE_API_KEY || 'xyz',
 };
 
-export const typesenseSearchFilterResultsParameters: TypesenseSearchFilterResultsParameters = {
-        vector_distance: parseFloat(env.NEXT_PUBLIC_VECTOR_DISTANCE_THRESHOLD || '0.2'),
-    };
+//TODO implement env file
+export const typesenseSearchVectorDistanceFilter: TypesenseSearchFilterResultsParameters = {
+    vector_distance: 0.23,
+    rank_fusion_score:  0.8,
+};
 
 // Search parameters configuration
-export const defaultSearchParameters: TypesenseSearchParameters = {
+export const typesenseSearchParameters: TypesenseSearchParameters = {
     query_by: 'embedding',
     exclude_fields: ['embedding'],
     per_page: 6,
@@ -40,5 +44,5 @@ export const defaultSearchParameters: TypesenseSearchParameters = {
     exhaustive_search: true,
     prioritize_exact_match: true,
     rerank_hybrid_matches: true,
-    vector_query: 'embedding:([], k:6, alpha:0.8)'
+    vector_query: 'embedding:([], k:1, alpha:0.1)'
 };

@@ -624,8 +624,9 @@ export interface TypesenseSearchParameters {
     vector_query: string;
 }
 
-export interface TypesenseSearchFilterResultsParameters{
+export interface TypesenseSearchFilterResultsParameters {
     vector_distance: number;
+    rank_fusion_score: number;
 }
 
 export interface TypesenseSchema {

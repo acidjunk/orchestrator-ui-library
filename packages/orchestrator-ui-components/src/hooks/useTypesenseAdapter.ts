@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import TypesenseInstantSearchAdapterModule from 'typesense-instantsearch-adapter';
 import Typesense from 'typesense';
 import { TypesenseSearchClient, TypesenseSchema } from '@/types';
-import { typesenseConfig, defaultSearchParameters } from '@/config/typesenseConfiguration';
+import { typesenseConfig, typesenseSearchParameters } from '@/config/typesenseConfiguration';
 
 // Workaround for TypesenseInstantSearchAdapter module format
 const TypesenseInstantSearchAdapter =
@@ -42,7 +42,7 @@ export function useTypesenseAdapter(collectionName: string): TypesenseSearchClie
 
                 // Configure search parameters
                 const searchParameters = {
-                    ...defaultSearchParameters,
+                    ...typesenseSearchParameters,
                     query_by: `embedding,${stringFields}`,
                 };
 
