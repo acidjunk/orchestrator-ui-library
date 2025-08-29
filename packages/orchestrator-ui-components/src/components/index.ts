@@ -34,3 +34,5 @@ export * from './WfoTitleWithWebsocketBadge';
 export * from './WfoRadioDropdown';
 export * from './WfoInlineNoteEdit';
 export * from './WfoTableCodeBlock';
+export * from './WfoInlineEdit';
+export * from './WfoPydanticForm';

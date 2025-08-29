@@ -33,16 +33,7 @@ export type FieldProps<
 export interface ContactPerson {
     name: string;
     email: string;
-}
-
-export interface Option<Value = string> {
-    value: Value;
-    label: string;
-}
-
-export interface Option<Value = string> {
-    value: Value;
-    label: string;
+    phone?: string;
 }
 
 export function prop<T, K extends keyof T>(obj: T, key: K): T[K] {

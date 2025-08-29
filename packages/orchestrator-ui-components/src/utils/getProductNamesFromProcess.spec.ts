@@ -12,12 +12,17 @@ const getProcessDetail = (data: Partial<ProcessDetail> = {}): ProcessDetail => {
         workflowName: 'workflowName',
         isTask: false,
         traceback: null,
+        userPermissions: {
+            retryAllowed: true,
+            resumeAllowed: true,
+        },
         steps: [
             {
                 name: 'step name',
                 status: StepStatus.RUNNING,
                 stepId: 'step id',
-                executed: 'executed',
+                started: 'started',
+                completed: 'completed',
                 state: {},
                 stateDelta: {},
             },

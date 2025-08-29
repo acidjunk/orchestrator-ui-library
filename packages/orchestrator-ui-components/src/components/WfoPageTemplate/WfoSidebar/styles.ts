@@ -22,7 +22,7 @@ export const getMenuStyles = ({ theme }: WfoTheme) => {
         '.euiSideNavItem--branch': {
             '&:after': {
                 backgroundColor: theme.colors.lightShade,
-                height: '120%',
+                height: '100%',
             },
             ':last-child': {
                 '&:after': {
@@ -45,7 +45,7 @@ export const getMenuItemStyles = ({ theme, isDarkThemeActive }: WfoTheme) => {
         ':hover': {
             textDecoration: 'underline',
         },
-        color: theme.colors.text,
+        color: theme.colors.subduedText,
         padding: `${theme.base * 0.5}px ${theme.base * 0.75}px`,
     };
 
@@ -69,7 +69,6 @@ export const getMenuItemStyles = ({ theme, isDarkThemeActive }: WfoTheme) => {
 
     const menuItemStyle = css({
         ...baseStyles,
-        color: theme.colors.subduedText,
     });
 
     const selectedMenuItemBaseStyle = {

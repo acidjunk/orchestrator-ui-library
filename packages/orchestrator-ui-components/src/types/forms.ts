@@ -1,7 +1,4 @@
-import { Ref } from 'react';
-
 import { JSONSchema6 } from 'json-schema';
-import { HTMLFieldProps } from 'uniforms';
 
 import { HttpStatus } from '@/rtk';
 
@@ -27,20 +24,6 @@ export interface FormNotCompleteResponse {
     meta?: { hasNext?: boolean };
 }
 
-export type FieldProps<
-    Value,
-    Extra = object,
-    InputElementType = HTMLInputElement,
-    ElementType = HTMLDivElement,
-> = HTMLFieldProps<
-    Value,
-    ElementType,
-    {
-        inputRef?: Ref<InputElementType>;
-        description?: string;
-    } & Extra
->;
-
 type ValidationErrorData = {
     detail: string;
     status: HttpStatus;
@@ -54,3 +37,8 @@ export type FormValidationError = {
     data: ValidationErrorData;
     status: HttpStatus;
 };
+
+export interface FormUserPermissions {
+    retryAllowed: boolean;
+    resumeAllowed: boolean;
+}

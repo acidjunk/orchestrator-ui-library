@@ -3,10 +3,12 @@ import { GraphQLErrorExtensions } from 'graphql/error/GraphQLError';
 import { getSession, signOut } from 'next-auth/react';
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { ErrorResponse } from '@rtk-query/graphql-request-base-query/dist/GraphqlBaseQueryTypes';
 
+import { SubscriptionListItem } from '@/components';
 import type { WfoSession } from '@/hooks';
 import { wfoGraphqlRequestBaseQuery } from '@/rtk/wfoGraphqlRequestBaseQuery';
-import { CacheTagType } from '@/types';
+import { CacheTagType, GraphqlQueryVariables } from '@/types';
 
 import type { RootState } from './store';
 
@@ -28,9 +30,38 @@ export enum HttpStatus {
     MultipleChoices = 300,
 }
 
+export interface ApiResult<T> {
+    data?: T;
+    error?: ErrorResponse;
+    isLoading: boolean;
+    isFetching: boolean;
+    isError: boolean;
+    refetch?: () => void;
+    selectFromResult?: (result: T) => T;
+    endpointName?: string;
+}
+
+interface UseQueryOptions<T, U> {
+    selectFromResult?: (
+        result: ApiResult<T>,
+    ) => Partial<ApiResult<T>> & { selectedItem?: U };
+    subscriptionId?: string;
+}
+
+interface UseQueryReturn<T, U> extends ApiResult<T> {
+    selectedItem?: U;
+    endpointName?: string;
+}
+
+export type UseQuery<T, U> = (
+    queryVariables?: GraphqlQueryVariables<SubscriptionListItem>,
+    options?: UseQueryOptions<T, U>,
+) => UseQueryReturn<T, U>;
+
 type ExtraOptions = {
     baseQueryType?: BaseQueryTypes;
     apiName?: string;
+    paramsSerializer?: (params: Record<string, unknown>) => string;
 };
 
 export type WfoGraphqlError = {
@@ -101,7 +132,7 @@ export const catchErrorResponse = async (
 export const orchestratorApi = createApi({
     reducerPath: 'orchestratorApi',
     baseQuery: (args, api, extraOptions: ExtraOptions) => {
-        const { baseQueryType, apiName } = extraOptions || {};
+        const { baseQueryType, apiName, paramsSerializer } = extraOptions || {};
 
         const state = api.getState() as RootState;
         const { orchestratorApiBaseUrl, graphqlEndpointCore, authActive } =
@@ -112,17 +143,19 @@ export const orchestratorApi = createApi({
         );
 
         switch (baseQueryType) {
-            case BaseQueryTypes.fetch:
+            case BaseQueryTypes.fetch: {
                 const fetchFn = fetchBaseQuery({
                     baseUrl: customApi
                         ? customApi.apiBaseUrl
                         : orchestratorApiBaseUrl,
                     prepareHeaders,
+                    paramsSerializer,
                     responseHandler: (response) =>
                         catchErrorResponse(response, authActive),
                 });
                 return fetchFn(args, api, {});
-            default:
+            }
+            default: {
                 const graphqlFn = wfoGraphqlRequestBaseQuery(
                     {
                         url: customApi
@@ -136,6 +169,7 @@ export const orchestratorApi = createApi({
                     authActive,
                 );
                 return graphqlFn(args, api, {});
+            }
         }
     },
     endpoints: () => ({}),

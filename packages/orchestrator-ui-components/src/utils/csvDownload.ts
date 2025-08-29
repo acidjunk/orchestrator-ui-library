@@ -26,11 +26,23 @@ function startCsvDownload(csvFileContent: string, fileName: string) {
     URL.revokeObjectURL(url);
 }
 
+function totalItemsExceedMaximumItemsForBulkFetching(
+    totalItems?: number | null,
+) {
+    return (totalItems ?? 0) > MAXIMUM_ITEMS_FOR_BULK_FETCHING;
+}
+
+// This function should be used when the data is mapped and ready to be exported
 export function initiateCsvFileDownload<T extends object>(
     data: T[],
+    keyOrder: string[],
     fileName: string,
 ) {
-    const csvFileContent = toCsvFileContent(data);
+    const dataForExport = data.map((dataRow) =>
+        toObjectWithSortedKeys(toObjectWithSerializedValues(dataRow), keyOrder),
+    );
+
+    const csvFileContent = toCsvFileContent(dataForExport);
     startCsvDownload(csvFileContent, fileName);
 }
 
@@ -47,41 +59,58 @@ export const getCsvFileNameWithDate = (fileNameWithoutExtension: string) => {
     return `${fileNameWithoutExtension}_${year}-${month}-${day}-${hour}${minute}${second}.csv`;
 };
 
-export const csvDownloadHandler = <T extends object, U extends object>(
-    dataFetchFunction: () => Promise<T | undefined>,
-    dataMapper: (data: T) => U[],
-    pageInfoMapper: (data: T) => GraphQLPageInfo,
-    keyOrder: string[],
-    filename: string,
-    addToastFunction: (type: ToastTypes, text: string, title: string) => void,
-    translationFunction: (
-        translationKey: string,
-        variables?: TranslationValues,
-    ) => string,
-) => {
-    return async () => {
-        const data: T | undefined = await dataFetchFunction();
+// This async function should be used when the exported data needs to be fetched from somewhere else
+export const csvDownloadHandler =
+    <T extends object, U extends object>(
+        dataFetchFunction: () => Promise<T | undefined>,
+        dataMapper: (data: T) => U[],
+        pageInfoMapper: (data: T) => GraphQLPageInfo,
+        keyOrder: string[],
+        filename: string,
+        addToastFunction: (
+            type: ToastTypes,
+            text: string,
+            title: string,
+        ) => void,
+        translationFunction: (
+            translationKey: string,
+            variables?: TranslationValues,
+        ) => string,
+    ) =>
+    async () => {
+        const fetchResult: T | undefined = await dataFetchFunction();
 
-        if (data) {
-            const dataForExport = dataMapper(data).map((dataRow) =>
-                toObjectWithSortedKeys(
-                    toObjectWithSerializedValues(dataRow),
-                    keyOrder,
-                ),
-            );
-
-            const pageInfo = pageInfoMapper(data);
-            if ((pageInfo.totalItems ?? 0) > MAXIMUM_ITEMS_FOR_BULK_FETCHING) {
-                addToastFunction(
-                    ToastTypes.ERROR,
-                    translationFunction('notAllResultsExported', {
-                        totalResults: pageInfo.totalItems,
-                        maximumExportedResults: MAXIMUM_ITEMS_FOR_BULK_FETCHING,
-                    }),
-                    translationFunction('notAllResultsExportedTitle'),
-                );
-            }
-            initiateCsvFileDownload(dataForExport, filename);
+        if (!fetchResult) {
+            return;
         }
+
+        const data = dataMapper(fetchResult);
+        const pageInfo = pageInfoMapper(fetchResult);
+
+        if (totalItemsExceedMaximumItemsForBulkFetching(pageInfo.totalItems)) {
+            addToastFunction(
+                ToastTypes.ERROR,
+                translationFunction('notAllResultsExported', {
+                    totalResults: pageInfo.totalItems,
+                    maximumExportedResults: MAXIMUM_ITEMS_FOR_BULK_FETCHING,
+                }),
+                translationFunction('notAllResultsExportedTitle'),
+            );
+        }
+
+        initiateCsvFileDownload(data, keyOrder, filename);
     };
-};
+
+export const getPageInfoForSyncExport = (
+    dataLength: number,
+    sortFields?: string[],
+    filterFields?: string[],
+): GraphQLPageInfo => ({
+    startCursor: 0,
+    endCursor: Math.max(0, dataLength - 1),
+    hasNextPage: false,
+    totalItems: dataLength,
+    hasPreviousPage: false,
+    sortFields: sortFields ?? [],
+    filterFields: filterFields ?? [],
+});

@@ -21,8 +21,9 @@ export const WfoToolTip: FC<WfoToolTipProps> = ({
             content={tooltipContent}
             css={{ maxWidth: 'fit-content' }}
             repositionOnScroll
+            display="block"
         >
-            <div>{children}</div>
+            <div css={{ width: '100%' }}>{children}</div>
         </EuiToolTip>
     );
 };

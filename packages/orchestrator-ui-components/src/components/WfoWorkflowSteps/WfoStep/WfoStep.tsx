@@ -15,22 +15,25 @@ import { useOrchestratorTheme, useWithOrchestratorTheme } from '@/hooks';
 import { WfoChevronDown, WfoChevronUp } from '@/icons';
 import type { EmailState } from '@/types';
 import { StepStatus } from '@/types';
+import { FormUserPermissions } from '@/types/forms';
 import { calculateTimeDifference, formatDate } from '@/utils';
 
 import { WfoStepStatusIcon } from '../WfoStepStatusIcon';
 import type { StepListItem } from '../WfoWorkflowStepList';
 import { getStepContent } from '../stepListUtils';
-import { getStyles } from '../styles';
+import { getWorkflowStepsStyles } from '../styles';
 import { WfoStepForm } from './WfoStepForm';
 
 export interface WfoStepProps {
     stepListItem: StepListItem;
     startedAt: string;
+    completedAt: string;
     showHiddenKeys: boolean;
     onToggleStepDetail: () => void;
     isTask: boolean;
     isStartStep?: boolean;
     processId?: string;
+    userPermissions: FormUserPermissions;
 }
 
 export const WfoStep = React.forwardRef(
@@ -39,10 +42,12 @@ export const WfoStep = React.forwardRef(
             stepListItem,
             onToggleStepDetail,
             startedAt,
+            completedAt,
             showHiddenKeys,
             isStartStep = false,
             isTask,
             processId,
+            userPermissions,
         }: WfoStepProps,
         ref: LegacyRef<HTMLDivElement>,
     ) => {
@@ -58,10 +63,12 @@ export const WfoStep = React.forwardRef(
             stepDurationStyle,
             stepRowStyle,
             getStepToggleExpandStyle,
-        } = useWithOrchestratorTheme(getStyles);
+        } = useWithOrchestratorTheme(getWorkflowStepsStyles);
         const t = useTranslations('processes.steps');
-        const hasHtmlMail =
-            step.stateDelta?.hasOwnProperty('confirmation_mail');
+        const hasHtmlMail = Object.prototype.hasOwnProperty.call(
+            step?.stateDelta || {},
+            'confirmation_mail',
+        );
 
         const stepContent = step.stateDelta
             ? getStepContent(step.stateDelta, showHiddenKeys)
@@ -128,13 +135,13 @@ export const WfoStep = React.forwardRef(
                             </EuiText>
                             <EuiText>
                                 {step.status}{' '}
-                                {step.executed &&
-                                    `- ${formatDate(step.executed)}`}
+                                {step.completed &&
+                                    `- ${formatDate(step.completed)}`}
                             </EuiText>
                         </EuiFlexItem>
 
                         <EuiFlexGroup css={stepRowStyle}>
-                            {step.executed && (
+                            {step.completed && (
                                 <>
                                     {isExpanded && (
                                         <EuiButton
@@ -163,7 +170,7 @@ export const WfoStep = React.forwardRef(
                                         <EuiText size="m">
                                             {calculateTimeDifference(
                                                 startedAt,
-                                                step.executed,
+                                                completedAt,
                                             )}
                                         </EuiText>
                                     </EuiFlexItem>
@@ -207,6 +214,7 @@ export const WfoStep = React.forwardRef(
                             userInputForm={userInputForm}
                             isTask={isTask}
                             processId={processId}
+                            userPermissions={userPermissions}
                         />
                     )}
                 </EuiPanel>

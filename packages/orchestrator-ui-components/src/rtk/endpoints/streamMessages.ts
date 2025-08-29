@@ -1,28 +1,8 @@
 import { debounce } from 'lodash';
-import { getSession } from 'next-auth/react';
 
-import type { WfoSession } from '@/hooks';
-import { addToastMessage } from '@/rtk/slices/toastMessages';
+import { getWebSocket, orchestratorApi } from '@/rtk';
 import type { RootState } from '@/rtk/store';
-import { ToastTypes } from '@/types';
 import { CacheTag, CacheTagType } from '@/types';
-import { getToastMessage } from '@/utils/getToastMessage';
-
-import { orchestratorApi } from '../api';
-
-const getWebSocket = async (url: string) => {
-    const session = (await getSession()) as WfoSession;
-
-    if (session?.accessToken) {
-        // Implemented authentication taking this into account: https://stackoverflow.com/questions/4361173/http-headers-in-websockets-client-api/77060459#77060459
-        return new WebSocket(url, [
-            'base64.bearer.token',
-            session?.accessToken,
-        ]);
-    } else {
-        return new WebSocket(url);
-    }
-};
 
 const PING_INTERVAL_MS = 30000;
 const NO_PONG_RECEIVED_TIMEOUT_MS = 35000;
@@ -53,7 +33,7 @@ const streamMessagesApi = orchestratorApi.injectEndpoints({
     endpoints: (build) => ({
         streamMessages: build.query<boolean, void>({
             queryFn: () => {
-                return { data: false };
+                return { data: true };
             },
             async onCacheEntryAdded(
                 _,
@@ -66,12 +46,6 @@ const streamMessagesApi = orchestratorApi.injectEndpoints({
                 },
             ) {
                 const cleanUp = () => {
-                    const message = getToastMessage(
-                        ToastTypes.ERROR,
-                        'Connection to the server was lost. Please click the websocket icon or refresh the page to reconnect.',
-                        'WebSocket closed',
-                    );
-                    dispatch(addToastMessage(message));
                     clearInterval(pingInterval);
                     updateCachedData(() => false);
                 };
@@ -97,7 +71,7 @@ const streamMessagesApi = orchestratorApi.injectEndpoints({
                 const getDebounce = (delay: number) => {
                     return debounce(() => {
                         webSocket.close();
-                        // note: websocket.close doesnt trigger the onclose handler when losing
+                        // note: websocket.close doesn't trigger the onClose handler when closing
                         // internet connection so we call the cleanup event from here to be sure it's called
                         cleanUp();
                     }, delay);

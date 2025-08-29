@@ -1,4 +1,5 @@
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -12,10 +13,11 @@ import {
     WfoDataSorting,
 } from '../utils/columns';
 import { DEFAULT_PAGE_SIZES } from '../utils/constants';
+import { getPageCount } from '../utils/tableUtils';
 import { WfoTableDataRows } from './WfoTableDataRows';
 import { WfoTableHeaderRow } from './WfoTableHeaderRow';
 import { getWfoTableStyles } from './styles';
-import { getSortedVisibleColumns } from './utils';
+import { getColumnWidthsFromConfig, getSortedVisibleColumns } from './utils';
 
 export type Pagination = {
     pageSize: number;
@@ -98,7 +100,12 @@ export type WfoTableProps<T extends object> = {
     onRowClick?: (row: T) => void;
     onUpdateDataSorting?: (updatedDataSorting: WfoDataSorting<T>) => void;
     onUpdateDataSearch?: (updatedDataSearch: WfoDataSearch<T>) => void;
+    appendFillerColumn?: boolean;
     className?: string;
+};
+
+export type LocalColumnWidths = {
+    [key: string]: string;
 };
 
 export const WfoTable = <T extends object>({
@@ -114,8 +121,24 @@ export const WfoTable = <T extends object>({
     onUpdateDataSorting,
     onUpdateDataSearch,
     onRowClick,
+    appendFillerColumn = true,
     className,
 }: WfoTableProps<T>) => {
+    const [localColumnWidths, setLocalColumnWidths] =
+        useState<LocalColumnWidths>(getColumnWidthsFromConfig(columnConfig));
+
+    const columnConfigWithFiller: WfoTableColumnConfig<T> = appendFillerColumn
+        ? {
+              ...columnConfig,
+              filler: {
+                  columnType: ColumnType.CONTROL,
+                  label: '',
+                  width: '100%',
+                  renderControl: () => null,
+              },
+          }
+        : columnConfig;
+
     const {
         tableContainerStyle,
         tableStyle,
@@ -124,14 +147,39 @@ export const WfoTable = <T extends object>({
         cellStyle,
         rowStyle,
         emptyTableMessageStyle,
+        paginationStyle,
     } = useWithOrchestratorTheme(getWfoTableStyles);
     const t = useTranslations('common');
 
     const sortedVisibleColumns = getSortedVisibleColumns(
-        columnConfig,
+        columnConfigWithFiller,
         columnOrder,
         hiddenColumns,
     );
+
+    const onUpdateColumWidth = (fieldName: string, width: number) => {
+        setLocalColumnWidths((localWidths) => {
+            return {
+                ...localWidths,
+                [fieldName]: `${width}px`,
+            };
+        });
+    };
+
+    const configWithLocalWidths: WfoTableColumnConfig<T> = Object.entries(
+        columnConfigWithFiller,
+    ).reduce((mergedConfig, [fieldName, fieldConfig]) => {
+        const key = fieldName as keyof WfoTableColumnConfig<T>;
+        if (fieldConfig.columnType === ColumnType.DATA) {
+            mergedConfig[key] = {
+                ...fieldConfig,
+                width: localColumnWidths[key],
+            };
+        } else {
+            mergedConfig[key] = fieldConfig;
+        }
+        return mergedConfig;
+    }, {} as WfoTableColumnConfig<T>);
 
     return (
         <>
@@ -142,12 +190,13 @@ export const WfoTable = <T extends object>({
                     ) : (
                         <thead css={headerStyle}>
                             <WfoTableHeaderRow
-                                columnConfig={columnConfig}
+                                columnConfig={configWithLocalWidths}
                                 hiddenColumns={hiddenColumns}
                                 columnOrder={columnOrder}
                                 dataSorting={dataSorting}
                                 onUpdateDataSorting={onUpdateDataSorting}
                                 onUpdateDataSearch={onUpdateDataSearch}
+                                onUpdateColumWidth={onUpdateColumWidth}
                             />
                         </thead>
                     )}
@@ -168,7 +217,7 @@ export const WfoTable = <T extends object>({
                         <tbody css={isLoading && bodyLoadingStyle}>
                             <WfoTableDataRows
                                 data={data}
-                                columnConfig={columnConfig}
+                                columnConfig={configWithLocalWidths}
                                 hiddenColumns={hiddenColumns}
                                 columnOrder={columnOrder}
                                 rowExpandingConfiguration={
@@ -181,12 +230,10 @@ export const WfoTable = <T extends object>({
                 </table>
             </div>
             {pagination && (
-                <>
+                <div css={paginationStyle}>
                     <EuiSpacer size="xs" />
                     <EuiTablePagination
-                        pageCount={Math.ceil(
-                            pagination.totalItemCount / pagination.pageSize,
-                        )}
+                        pageCount={getPageCount(pagination)}
                         activePage={pagination.pageIndex}
                         itemsPerPage={pagination.pageSize}
                         itemsPerPageOptions={
@@ -195,7 +242,7 @@ export const WfoTable = <T extends object>({
                         onChangePage={pagination.onChangePage}
                         onChangeItemsPerPage={pagination.onChangeItemsPerPage}
                     />
-                </>
+                </div>
             )}
         </>
     );

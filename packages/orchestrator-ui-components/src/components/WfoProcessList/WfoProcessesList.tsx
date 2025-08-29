@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import {
     FilterQuery,
@@ -99,12 +100,13 @@ export const WfoProcessesList = ({
     const t = useTranslations('processes.index');
     const tError = useTranslations('errors');
     const { showToastMessage } = useShowToastMessage();
+    const router = useRouter();
 
     const defaultTableColumns: WfoAdvancedTableColumnConfig<ProcessListItem> = {
         workflowName: {
             columnType: ColumnType.DATA,
             label: t('workflowName'),
-            width: '20%',
+            width: '225px',
             renderData: (value, { processId }) => (
                 <Link href={`${PATH_WORKFLOWS}/${processId}`}>{value}</Link>
             ),
@@ -113,50 +115,53 @@ export const WfoProcessesList = ({
         lastStep: {
             columnType: ColumnType.DATA,
             label: t('step'),
-            width: '15%',
+            width: '375px',
         },
         lastStatus: {
             columnType: ColumnType.DATA,
             label: t('status'),
-            width: '100',
             renderData: (cellValue) => (
                 <WfoProcessStatusBadge processStatus={cellValue} />
             ),
+            width: '150px',
         },
         workflowTarget: {
             columnType: ColumnType.DATA,
             label: t('workflowTarget'),
-            width: '100',
             renderData: (target) => <WfoWorkflowTargetBadge target={target} />,
+            width: '100px',
         },
         tag: {
             columnType: ColumnType.DATA,
             label: t('productTag'),
-            width: '100',
+            width: '100px',
         },
         productName: {
             columnType: ColumnType.DATA,
             label: t('product'),
-            width: '10%',
+            width: '275px',
         },
         customer: {
             columnType: ColumnType.DATA,
             label: t('customer'),
-            width: '10%',
+            width: '250px',
         },
         customerAbbreviation: {
             columnType: ColumnType.DATA,
             label: t('customerAbbreviation'),
-            width: '10%',
+            width: '125px',
         },
         subscriptions: {
             columnType: ColumnType.DATA,
             label: t('subscriptions'),
-            width: '15%',
-            renderData: ({ page: subscriptions }) => (
+            width: '425px',
+            renderData: ({ page: subscriptions }, { processId }) => (
                 <WfoProcessListSubscriptionsCell
                     subscriptions={subscriptions}
                     numberOfSubscriptionsToRender={1}
+                    onMoreSubscriptionsClick={() =>
+                        router.push(`${PATH_WORKFLOWS}/${processId}`)
+                    }
                 />
             ),
             renderDetails: ({ page: subscriptions }) => (
@@ -176,17 +181,17 @@ export const WfoProcessesList = ({
         createdBy: {
             columnType: ColumnType.DATA,
             label: t('createdBy'),
-            width: '10%',
+            width: '100px',
         },
         assignee: {
             columnType: ColumnType.DATA,
             label: t('assignee'),
-            width: '5%',
+            width: '100px',
         },
         processId: {
             columnType: ColumnType.DATA,
             label: t('processId'),
-            width: '90',
+            width: '90px',
             renderData: (value) => <WfoFirstPartUUID UUID={value} />,
             renderDetails: (value) => value,
             renderTooltip: (value) => value,
@@ -194,7 +199,7 @@ export const WfoProcessesList = ({
         startedAt: {
             columnType: ColumnType.DATA,
             label: t('started'),
-            width: '100',
+            width: '100px',
             renderData: (value) => <WfoDateTime dateOrIsoString={value} />,
             renderDetails: parseDateToLocaleDateTimeString,
             clipboardText: parseDateToLocaleDateTimeString,
@@ -203,7 +208,7 @@ export const WfoProcessesList = ({
         lastModifiedAt: {
             columnType: ColumnType.DATA,
             label: t('lastModified'),
-            width: '100',
+            width: '125px',
             renderData: (value) => <WfoDateTime dateOrIsoString={value} />,
             renderDetails: parseDateToLocaleDateTimeString,
             clipboardText: parseDateToLocaleDateTimeString,

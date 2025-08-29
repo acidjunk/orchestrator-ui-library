@@ -165,6 +165,8 @@ function Vlan({
         ) {
             onChange('');
         }
+        // Adding the missing dependencies to the dependency array leads to an infinite loop
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [onChange, subscriptionId, isFetched, portIsTagged]);
 
     const [usedVlansInIms, setUsedVlansInIms] = useState<VlanRange[]>([]);
@@ -212,20 +214,20 @@ function Vlan({
     const placeholder = isLoading
         ? t('widgets.vlan.loadingIms')
         : subscriptionId
-        ? t('widgets.vlan.placeholder')
-        : t('widgets.vlan.placeholderNoServicePort');
+          ? t('widgets.vlan.placeholder')
+          : t('widgets.vlan.placeholderNoServicePort');
 
     const errorMessageExtra = missingInIms
         ? t('widgets.vlan.missingInIms')
         : !validFormat
-        ? t('widgets.vlan.invalidVlan')
-        : vlansInUse.length
-        ? vlansInUse.length >= 1 && vlansInUse[0] === 0
-            ? t('widgets.vlan.untaggedPortInUse')
-            : t('widgets.vlan.vlansInUseError', {
-                  vlans: vlanRangeFromNumbers(vlansInUse),
-              })
-        : undefined;
+          ? t('widgets.vlan.invalidVlan')
+          : vlansInUse.length
+            ? vlansInUse.length >= 1 && vlansInUse[0] === 0
+                ? t('widgets.vlan.untaggedPortInUse')
+                : t('widgets.vlan.vlansInUseError', {
+                      vlans: vlanRangeFromNumbers(vlansInUse),
+                  })
+            : undefined;
 
     let message = '';
     if (!isLoading && subscriptionId) {

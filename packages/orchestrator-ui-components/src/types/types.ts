@@ -2,11 +2,15 @@ import { ReactNode } from 'react';
 
 import { Toast } from '@elastic/eui/src/components/toast/global_toast_list';
 
-import { InputForm } from './forms';
+import { FormUserPermissions, InputForm } from './forms';
 
 export type Nullable<T> = T | null;
 
 type GenericResponse = { [key: string]: unknown };
+
+export type StringifyObject<T extends object> = {
+    [key in keyof T]: string;
+};
 
 export type FieldValue = {
     field: string;
@@ -57,6 +61,11 @@ export type ProductBlockInstance = {
     inUseByRelations: InUseByRelation[];
     subscription: Pick<Subscription, 'subscriptionId' | 'description'>;
 };
+
+export type ProductBlockInstanceForDropdown = Omit<
+    ProductBlockInstance,
+    'inUseByRelations'
+>;
 
 export interface ResourceTypeDefinition {
     description: string;
@@ -135,6 +144,7 @@ export enum WorkflowTarget {
     MODIFY = 'modify',
     TERMINATE = 'terminate',
     SYSTEM = 'system',
+    VALIDATE = 'validate',
 }
 
 export type Process = {
@@ -188,6 +198,7 @@ export interface ProcessDetail {
     isTask: boolean;
     steps: Step[];
     traceback: string | null;
+    userPermissions: FormUserPermissions;
     subscriptions: {
         page: {
             product: Pick<ProductDefinition, 'name'>;
@@ -241,23 +252,29 @@ export interface Step {
     name: string;
     status: StepStatus;
     stepId: string; // sic backend
-    executed: string;
     state: StepState | undefined;
     stateDelta: StepState;
+    started: string;
+    completed: string;
 }
 
 export interface WorkflowDefinition {
+    workflowId: string;
     name: string;
-    description?: string;
+    description: string;
     target: WorkflowTarget;
+    isTask: boolean;
+    isAllowed: boolean;
     products: Pick<ProductDefinition, 'tag' | 'productId' | 'name'>[];
     createdAt: string;
 }
 
 export interface TaskDefinition {
+    workflowId: string;
     name: string;
-    description?: string;
+    description: string;
     target: WorkflowTarget;
+    isTask: boolean;
     products: Pick<ProductDefinition, 'tag' | 'productId' | 'name'>[];
     createdAt: string;
 }
@@ -293,7 +310,7 @@ export type GraphQLPageInfo = {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
     startCursor: number | null;
-    totalItems: number | null;
+    totalItems: number;
     endCursor: number | null;
     sortFields: string[];
     filterFields: string[];
@@ -391,6 +408,7 @@ export type StartComboBoxOption = {
         productId?: string;
     };
     label: string;
+    disabled?: boolean;
 };
 
 export interface GraphQlResultPage<T> {
@@ -408,6 +426,17 @@ export interface CacheOption {
 }
 
 export type CacheNames = { [key: string]: string };
+
+export type EnvironmentVariable = {
+    env_name: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    env_value: any;
+};
+
+export type EnvironmentVariables = {
+    name: string;
+    variables: EnvironmentVariable[];
+};
 
 export enum Locale {
     enGB = 'en-GB',
@@ -447,7 +476,7 @@ export type SubscriptionDropdownOption = {
     subscriptionId: Subscription['subscriptionId'];
     product: Pick<ProductDefinition, 'tag' | 'productId'>;
     customer: Pick<Customer, 'fullname' | 'customerId'>;
-    productBlockInstances: ProductBlockInstance[];
+    productBlockInstances: ProductBlockInstanceForDropdown[];
     fixedInputs: FieldValue[];
     tag: string;
     status: SubscriptionStatus;
@@ -457,10 +486,21 @@ export type SubscriptionDropdownOption = {
 };
 
 export type CustomerDescriptions = {
+    id: string;
     subscriptionId: string;
     description: string;
     customerId: string;
 };
+
+export type MetadataDescriptionParams = {
+    id: string;
+    description: string;
+};
+
+// export type Workflow = {
+//     workflow_id: string;
+//     description: string;
+// };
 
 export type SubscriptionDetail = {
     subscriptionId: string;
@@ -492,7 +532,7 @@ export type SubscriptionDetail = {
 
     externalServices?: ExternalService[];
 
-    processes: GraphQlSinglePage<SubscriptionDetailProcess>;
+    processes?: GraphQlSinglePage<SubscriptionDetailProcess>;
 };
 
 export type SubscriptionDetailProcess = Pick<
@@ -553,6 +593,8 @@ export type OrchestratorConfig = {
     showWorkflowInformationLink: boolean;
     enableSupportMenuItem: boolean;
     supportMenuItemUrl: string;
+    enableAoStackStatus: boolean;
+    aoStackStatusUrl: string;
 };
 
 export enum ColorModes {
@@ -578,6 +620,7 @@ export type SubscriptionActions = {
     modify: SubscriptionAction[];
     terminate: SubscriptionAction[];
     system: SubscriptionAction[];
+    validate: SubscriptionAction[];
 };
 
 export enum CacheTagType {
@@ -587,6 +630,18 @@ export enum CacheTagType {
     processStatusCounts = 'processStatusCounts',
     subscriptions = 'subscriptions',
 }
+
+export interface MappedVersion {
+    orchestratorUiVersion: string;
+    minimumOrchestratorCoreVersion: string;
+    changes: string;
+}
+
+export interface Option<ValueType = string> {
+    value: ValueType;
+    label: string;
+}
+
 export type CacheTag = { type: CacheTagType; id?: string };
 
 export const CACHETAG_TYPE_LIST = 'LIST';
