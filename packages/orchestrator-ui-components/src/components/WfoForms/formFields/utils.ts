@@ -1,12 +1,17 @@
-import { isDate } from 'moment';
+import { isDate } from 'moment/moment';
 
-import { ProductBlockInstance, SubscriptionDetail } from '@/types';
-
-import { PortMode, ProductTag } from './deprecated/types';
+import { PortMode, ProductTag } from '@/components';
+import {
+    ProductBlockInstance,
+    ProductBlockInstanceForDropdown,
+    SubscriptionDetail,
+} from '@/types';
 
 // NOTE: There might potentially (?) be more productBlockInstances with portMod but we get the last one here
 export const getPortMode = (
-    productBlockInstances: ProductBlockInstance[],
+    productBlockInstances:
+        | ProductBlockInstance[]
+        | ProductBlockInstanceForDropdown[],
 ): PortMode | undefined => {
     return productBlockInstances?.reduce(
         (portMode: PortMode | undefined, productBlockInstance) => {

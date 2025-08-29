@@ -3,10 +3,16 @@ import React, { FC, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/router';
 
-import { EuiSideNav, EuiSpacer } from '@elastic/eui';
+import {
+    EuiHorizontalRule,
+    EuiSideNav,
+    EuiSpacer,
+    htmlIdGenerator,
+} from '@elastic/eui';
 import { EuiSideNavItemType } from '@elastic/eui/src/components/side_nav/side_nav_types';
 
 import { WfoIsAllowedToRender, menuItemIsAllowed } from '@/components';
+import { WfoMenuItemLink } from '@/components';
 import { getMenuStyles } from '@/components/WfoPageTemplate/WfoSidebar/styles';
 import { WfoStartWorkflowButtonComboBox } from '@/components/WfoStartButton/WfoStartWorkflowComboBox';
 import { PolicyResource } from '@/configuration/policy-resources';
@@ -26,7 +32,6 @@ import {
     PATH_WORKFLOWS,
 } from '../paths';
 import { WfoCopyright } from './WfoCopyright';
-import { WfoMenuItemLink } from './WfoMenuLink';
 
 export const urlPolicyMap = new Map<string, PolicyResource>([
     [PATH_WORKFLOWS, PolicyResource.NAVIGATION_WORKFLOWS],
@@ -35,6 +40,12 @@ export const urlPolicyMap = new Map<string, PolicyResource>([
     [PATH_TASKS, PolicyResource.NAVIGATION_TASKS],
     [PATH_SETTINGS, PolicyResource.NAVIGATION_SETTINGS],
 ]);
+
+export const createSideNavDivider = (): EuiSideNavItemType<object> => ({
+    name: '',
+    id: htmlIdGenerator('menuDivider')(),
+    renderItem: () => <EuiHorizontalRule margin="xs" />,
+});
 
 export type WfoSidebarProps = {
     overrideMenuItems?: (
@@ -60,7 +71,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
     const defaultMenuItems: EuiSideNavItemType<object>[] = [
         {
             name: t('start'),
-            id: '2',
+            id: 'start',
             isSelected: router.pathname === PATH_START,
             href: PATH_START,
             renderItem: () => (
@@ -73,7 +84,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
         },
         {
             name: t('subscriptions'),
-            id: '3',
+            id: 'subscriptions',
             isSelected: router.pathname.startsWith(PATH_SUBSCRIPTIONS),
             href: PATH_SUBSCRIPTIONS,
             renderItem: () => (
@@ -86,7 +97,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
         },
         {
             name: t('workflows'),
-            id: '4',
+            id: 'workflows',
             isSelected: router.pathname.startsWith(PATH_WORKFLOWS),
             href: PATH_WORKFLOWS,
             renderItem: () => (
@@ -100,7 +111,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
         {
             name: t('tasks'),
             isSelected: router.pathname.startsWith(PATH_TASKS),
-            id: '5',
+            id: 'tasks',
             href: PATH_TASKS,
             renderItem: () => (
                 <WfoMenuItemLink
@@ -112,7 +123,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
         },
         {
             name: t('metadata'),
-            id: '6',
+            id: 'metadata',
             href: PATH_METADATA,
             isSelected:
                 router.pathname.substring(0, PATH_METADATA.length) ===
@@ -121,17 +132,13 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
                 <WfoMenuItemLink
                     path={PATH_METADATA_PRODUCTS}
                     translationString="metadata"
-                    isSelected={
-                        router.pathname.substring(0, PATH_METADATA.length) ===
-                        PATH_METADATA
-                    }
                     hasSubItems={true}
                 />
             ),
             items: [
                 {
                     name: t('metadataProducts'),
-                    id: '6.1',
+                    id: 'metadata-products',
                     href: PATH_METADATA_PRODUCTS,
                     renderItem: () => (
                         <WfoMenuItemLink
@@ -146,7 +153,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
                 },
                 {
                     name: t('metadataProductblocks'),
-                    id: '6.2',
+                    id: 'metadata-productblocks',
                     isSelected:
                         router.pathname === PATH_METADATA_PRODUCT_BLOCKS,
                     href: PATH_METADATA_PRODUCT_BLOCKS,
@@ -163,7 +170,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
                 },
                 {
                     name: t('metadataResourceTypes'),
-                    id: '6.3',
+                    id: 'metadata-resourceTypes',
                     href: PATH_METADATA_RESOURCE_TYPES,
                     isSelected:
                         router.pathname === PATH_METADATA_RESOURCE_TYPES,
@@ -180,7 +187,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
                 },
                 {
                     name: t('metadataWorkflows'),
-                    id: '6.4',
+                    id: 'metadata-workflows',
                     isSelected: router.pathname === PATH_METADATA_WORKFLOWS,
                     href: PATH_METADATA_WORKFLOWS,
                     renderItem: () => (
@@ -196,7 +203,7 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
                 },
                 {
                     name: t('metadataTasks'),
-                    id: '6.5',
+                    id: 'metadata-tasks',
                     isSelected: router.pathname === PATH_METADATA_TASKS,
                     href: PATH_METADATA_TASKS,
                     renderItem: () => (
@@ -212,8 +219,8 @@ export const WfoSidebar: FC<WfoSidebarProps> = ({ overrideMenuItems }) => {
         },
         {
             name: t('settings'),
+            id: 'settings',
             isSelected: router.pathname === PATH_SETTINGS,
-            id: '7',
             href: PATH_SETTINGS,
             renderItem: () => (
                 <WfoMenuItemLink

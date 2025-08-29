@@ -17,6 +17,7 @@ export const SETTINGS_WORKER_STATUS_ENDPOINT = `${SETTINGS_ENDPOINT}/worker-stat
 export const SETTINGS_CACHE_NAMES_ENDPOINT = `${SETTINGS_ENDPOINT}/cache-names`;
 export const SETTINGS_CACHE_ENDPOINT = `${SETTINGS_ENDPOINT}/cache`;
 export const SETTINGS_SEARCH_INDEX_RESET_ENDPOINT = `${SETTINGS_ENDPOINT}/search-index/reset`;
+export const SETTINGS_OVERVIEW = `${SETTINGS_ENDPOINT}/overview`;
 //ipam
 export const IPAM_ENDPOINT = 'surf/ipam';
 export const IPAM_PREFIX_FILTERS_ENDPOINT = `${IPAM_ENDPOINT}/prefix_filters`;
@@ -25,3 +26,13 @@ export const IPAM_FREE_SUBNETS_ENDPOINT = `${IPAM_ENDPOINT}/free_subnets`;
 
 //subscriptions
 export const SUBSCRIPTION_ACTIONS_ENDPOINT = 'subscriptions/workflows';
+export const SUBSCRIPTION_DROPDOWN_OPTIONS_ENDPOINT =
+    'surf/subscriptions/dropdown-options';
+export const CUSTOMER_DESCRIPTION_ENDPOINT =
+    '/subscription_customer_descriptions';
+
+//metadata
+export const METADATA_PRODUCT_ENDPOINT = 'products';
+export const METADATA_PRODUCT_BLOCK_ENDPOINT = 'product_blocks';
+export const METADATA_RESOURCE_TYPE_ENDPOINT = 'resource_types';
+export const METADATA_WORKFLOWS_ENDPOINT = 'workflows';

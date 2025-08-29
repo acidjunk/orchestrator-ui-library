@@ -6,25 +6,20 @@ import {
     SubscriptionKeyValueBlock,
     WfoCustomerDescriptionsField,
     WfoInSyncField,
-    WfoInlineNoteEdit,
+    WfoSubscriptionDetailNoteEdit,
     WfoSubscriptionStatusBadge,
 } from '@/components';
 import { SubscriptionDetail } from '@/types';
-import { formatDate, toOptionalArrayEntry } from '@/utils';
+import { formatDate } from '@/utils';
 
 interface WfoSubscriptionDetailSectionProps {
-    isFetching: boolean;
     subscriptionDetail: SubscriptionDetail;
 }
 
 export const WfoSubscriptionDetailSection = ({
-    isFetching,
     subscriptionDetail,
 }: WfoSubscriptionDetailSectionProps) => {
     const t = useTranslations('subscriptions.detail');
-
-    const hasCustomerDescriptions =
-        subscriptionDetail.customerDescriptions.length > 0;
 
     const {
         subscriptionId,
@@ -35,7 +30,6 @@ export const WfoSubscriptionDetailSection = ({
         status,
         customer,
         customerDescriptions,
-        note,
     } = subscriptionDetail;
 
     const subscriptionDetailBlockData = [
@@ -66,12 +60,7 @@ export const WfoSubscriptionDetailSection = ({
         },
         {
             key: t('insync'),
-            value: (
-                <WfoInSyncField
-                    subscriptionDetail={subscriptionDetail}
-                    isFetching={isFetching}
-                />
-            ),
+            value: <WfoInSyncField subscriptionDetail={subscriptionDetail} />,
         },
         {
             key: t('customer'),
@@ -88,23 +77,22 @@ export const WfoSubscriptionDetailSection = ({
                     : '-',
             textToCopy: customer?.customerId,
         },
-        ...toOptionalArrayEntry(
-            {
-                key: t('customerDescriptions'),
-                value: (
-                    <WfoCustomerDescriptionsField
-                        customerDescriptions={customerDescriptions}
-                    />
-                ),
-            },
-            hasCustomerDescriptions,
-        ),
+        {
+            key: t('customerDescriptions'),
+            value: (
+                <WfoCustomerDescriptionsField
+                    customerDescriptions={customerDescriptions}
+                    subscriptionCustomerId={customer?.customerId}
+                    subscriptionId={subscriptionId}
+                />
+            ),
+        },
         {
             key: t('note'),
             value: (
-                <WfoInlineNoteEdit
+                <WfoSubscriptionDetailNoteEdit
                     subscriptionId={subscriptionId}
-                    value={note}
+                    onlyShowOnHover={true}
                 />
             ),
         },

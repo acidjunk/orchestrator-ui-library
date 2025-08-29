@@ -22,11 +22,12 @@ import { joinName, useField, useForm } from 'uniforms';
 import { EuiFormRow, EuiText } from '@elastic/eui';
 
 import { useWithOrchestratorTheme } from '@/hooks';
+import type { Option } from '@/types';
 
 import { ListField, ListFieldProps } from '../ListField';
 import { ListItemField } from '../ListItemField';
 import { ListSelectField } from '../ListSelectField';
-import { FieldProps, Option } from '../types';
+import { FieldProps } from '../types';
 import { getSelectFieldStyles } from './styles';
 
 export type SelectFieldProps = FieldProps<
@@ -101,6 +102,8 @@ export function UnconnectedSelectField({
         if (selectedValue && selectedValue.value !== 'undefined') {
             onChange(selectedValue.value);
         }
+        // Adding the missing dependencies to the dependency array leads to an infinite loop
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (fieldType === Array) {

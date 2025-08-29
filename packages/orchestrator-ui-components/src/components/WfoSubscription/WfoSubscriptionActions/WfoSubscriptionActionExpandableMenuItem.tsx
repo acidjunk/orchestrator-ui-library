@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
 import { EuiButtonIcon, EuiText } from '@elastic/eui';
-import { ReactJSXElement } from '@emotion/react/types/jsx-namespace';
 
 import { PATH_SUBSCRIPTIONS } from '@/components';
 import { useWithOrchestratorTheme } from '@/hooks';
@@ -15,7 +14,7 @@ import { getSubscriptionActionStyles } from './styles';
 export type WfoSubscriptionActionExpandableMenuItemProps = {
     subscriptionAction: SubscriptionAction;
     onClickLockedRelation: (relation: string) => void;
-    children: ReactJSXElement;
+    children: React.ReactNode;
 };
 
 export const WfoSubscriptionActionExpandableMenuItem: FC<
@@ -49,6 +48,7 @@ export const WfoSubscriptionActionExpandableMenuItem: FC<
                         css={expandButtonStyle}
                         iconType={isExpanded ? 'arrowDown' : 'arrowRight'}
                         onClick={() => setIsExpanded(!isExpanded)}
+                        aria-label={t('expand')}
                     />
                 )}
             </div>
@@ -60,6 +60,7 @@ export const WfoSubscriptionActionExpandableMenuItem: FC<
                             <Link
                                 css={linkStyle}
                                 href={`${PATH_SUBSCRIPTIONS}/${relation}`}
+                                target="_blank"
                                 onClick={() => onClickLockedRelation(relation)}
                             >
                                 {relation}

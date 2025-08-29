@@ -122,6 +122,7 @@ export const WfoProcessDetail = ({
 
     const retryButtonIsDisabled =
         buttonsAreDisabled ||
+        processDetail?.userPermissions!.retryAllowed === false ||
         !listIncludesStatus(
             [
                 ProcessStatus.FAILED,
@@ -154,7 +155,7 @@ export const WfoProcessDetail = ({
             question: t(
                 processIsTask ? 'retryTaskQuestion' : 'retryWorkflowQuestion',
                 {
-                    workflowName: processDetail?.workflowName,
+                    workflowName: processDetail?.workflowName || '',
                 },
             ),
             onConfirm: () => {
@@ -169,7 +170,7 @@ export const WfoProcessDetail = ({
             question: t(
                 processIsTask ? 'abortTaskQuestion' : 'abortWorkflowQuestion',
                 {
-                    workflowName: processDetail?.workflowName,
+                    workflowName: processDetail?.workflowName || '',
                 },
             ),
             onConfirm: () => {
@@ -183,7 +184,7 @@ export const WfoProcessDetail = ({
     const deleteAction = () =>
         showConfirmDialog({
             question: t('deleteQuestion', {
-                workflowName: processDetail?.workflowName,
+                workflowName: processDetail?.workflowName || '',
             }),
             onConfirm: () => {
                 if (processDetail?.processId) {

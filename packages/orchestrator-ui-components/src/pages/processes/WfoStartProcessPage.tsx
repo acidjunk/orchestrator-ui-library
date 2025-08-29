@@ -14,8 +14,9 @@ import {
 
 import { PATH_TASKS, PATH_WORKFLOWS, WfoError, WfoLoading } from '@/components';
 import { UserInputFormWizard } from '@/components/WfoForms/UserInputFormWizard';
+import { WfoPydanticForm } from '@/components/WfoPydanticForm';
 import { WfoStepStatusIcon } from '@/components/WfoWorkflowSteps';
-import { getStyles } from '@/components/WfoWorkflowSteps/styles';
+import { getWorkflowStepsStyles } from '@/components/WfoWorkflowSteps/styles';
 import { useOrchestratorTheme, useWithOrchestratorTheme } from '@/hooks';
 import {
     HttpStatus,
@@ -35,21 +36,27 @@ import { FormNotCompleteResponse } from '@/types/forms';
 
 import { WfoProcessDetail } from './WfoProcessDetail';
 
+type PreselectedInput = {
+    prefix?: string;
+    prefixlen?: string;
+};
+
 type StartCreateWorkflowPayload = {
     product: string;
-};
+} & PreselectedInput;
+
 type StartModifyWorkflowPayload = {
     subscription_id: string;
 };
 
-type StartWorkflowPayload =
+export type StartWorkflowPayload =
     | StartCreateWorkflowPayload
     | StartModifyWorkflowPayload;
 
-interface StartProcessPageQuery {
+type StartProcessPageQuery = {
     productId?: string;
     subscriptionId?: string;
-}
+} & PreselectedInput;
 
 interface WfoStartProcessPageProps {
     processName: string;
@@ -65,14 +72,13 @@ const getInitialProcessPayload = ({
     productId,
     subscriptionId,
 }: StartProcessPageQuery): StartWorkflowPayload | undefined => {
-    if (productId) {
-        return {
-            product: productId,
-        };
-    }
     if (subscriptionId) {
         return {
             subscription_id: subscriptionId,
+        };
+    } else if (productId) {
+        return {
+            product: productId,
         };
     }
     return undefined;
@@ -108,14 +114,18 @@ export const WfoStartProcessPage = ({
     const [startProcess] = useStartProcessMutation();
 
     const startProcessPayload = useMemo(
-        () => getInitialProcessPayload({ productId, subscriptionId }),
+        () =>
+            getInitialProcessPayload({
+                productId,
+                subscriptionId,
+            }),
         [productId, subscriptionId],
     );
 
     const { stepUserInput, hasNext } = form;
 
     const { getStepHeaderStyle, stepListContentBoldTextStyle } =
-        useWithOrchestratorTheme(getStyles);
+        useWithOrchestratorTheme(getWorkflowStepsStyles);
 
     const {
         data: timeLineItems = [],
@@ -184,7 +194,7 @@ export const WfoStartProcessPage = ({
     );
 
     useEffect(() => {
-        if (processName) {
+        if (processName && processName !== 'modify_note') {
             const clientResultCallback = (json: FormNotCompleteResponse) => {
                 setForm({
                     stepUserInput: json.form,
@@ -254,6 +264,13 @@ export const WfoStartProcessPage = ({
                 </EuiFlexGroup>
                 <EuiHorizontalRule />
                 {(hasError && <WfoError />) ||
+                    (processName === 'modify_note' && (
+                        <WfoPydanticForm
+                            processName={processName}
+                            startProcessPayload={startProcessPayload}
+                            isTask={isTask}
+                        />
+                    )) ||
                     (stepUserInput && (
                         <UserInputFormWizard
                             stepUserInput={stepUserInput}

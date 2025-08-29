@@ -20,11 +20,14 @@
         "lightMode": "Light mode",
         "websocketConnected": "De pagina ontvangt live updates van de server",
         "websocketDisconnected": "De websocket verbinding is verbroken, klik op het icoon of ververs de pagina.",
+        "websocketDisconnectedShort": "WebSocket verbroken, klik op het icoon om opnieuw te verbinden.",
         "resetToDefault": "Reset naar standaard",
         "savePreferences": "Voorkeuren opslaan",
         "numberOfRows": "Aantal rijen",
         "tableSettings": "Tabel instellingen",
-        "openMenu": "Open menu"
+        "openMenu": "Open menu",
+        "incompatibleVersion": "Incompatibele versie",
+        "minimumOrchestratorCoreVersion": "Minimale versie van orchestrator-core"
     },
     "common": {
         "product": "Produkt",
@@ -128,7 +131,15 @@
                 "loadingPorts": "IMS poorten laden...",
                 "selectNode": "Selecteer node",
                 "selectPort": "Selecteer poort",
+                "noPorts": "GEEN POORTEN GEVONDEN VOOR DEZE NODE",
                 "selectNodeFirst": "Selecteer eerst een node"
+            },
+            "fileUpload": {
+                "invalidFiletype": "Ongeldig bestandstype!",
+                "errorUploading": "Fout bij het upoaden van het bestand!",
+                "fileToBig": "Bestand te groot. Maximum bestand: {fileSizeLimit}",
+                "initialPromptText": "Selecteer een bestand of sleep het hierheen",
+                "supportedFileTypes": "Ondersteunde bestandstypen: pdf"
             }
         }
     },
@@ -167,7 +178,7 @@
         "resourceTypes": {
             "type": "Resource type",
             "description": "Resource type beschrijving",
-            "resourceId": "Resource ID",
+            "resourceId": "ID",
             "usedInProductBlocks": "Gebruikt in product blocks"
         },
         "workflows": {
@@ -200,7 +211,8 @@
             "started": "Starttijd",
             "lastModified": "Aangepast op",
             "workflowTarget": "Target",
-            "productTag": "Product tag"
+            "productTag": "Product tag",
+            "showAllRelatedSubscriptions": "Toon alle gerelateerde subscriptions"
         },
         "detail": {
             "retry": "Probeer opnieuw",
@@ -303,7 +315,8 @@
                     "no_validate_workflow": "Deze subscription kan niet worden gevalideerd omdat het product geen validate workflows heeft.",
                     "not_in_sync": "Deze subscription kan niet worden gewijzigd omdat het niet in-sync is. Dit betekent dat er een fout zit in de registratie van de subscription of dat het wordt gewijzigd door een andere workflow.",
                     "relations_not_in_sync": "Deze subscription kan niet worden gewijzigd omdat sommige gerelateerde subscriptions niet in-sync zijn. Geblokkeerde subscriptions: {locked_relations}",
-                    "no_modify_subscription_in_use_by_others": "Deze subscription kan niet worden gewijzigd omdat het in gebruik is door een of meer andere subscriptions: {unterminated_parents}"
+                    "no_modify_subscription_in_use_by_others": "Deze subscription kan niet worden gewijzigd omdat het in gebruik is door een of meer andere subscriptions: {unterminated_parents}",
+                    "insufficient_workflow_permissions": "Onvoldoende rechten om deze actie uit te kunnen voeren"
                 }
             },
             "subscriptionInstanceId": "Instance ID",
@@ -350,6 +363,8 @@
             },
             "showAll": "Toon alles",
             "hideAll": "Verberg alles",
+            "selectByNameTitle": "Selecteer product blocks op naam",
+            "selectByNameButtonText": "Selecteer op naam",
             "see": "Bekijk",
             "setInSync": "Set in Sync",
             "setInSyncQuestion": "Weet je zeker dat je de subscription in-sync wilt zetten? Je gaat een subscription geforceerd in-sync zetten. Alleen als je zeker weet wat de reden is van out-of-sync kun je de actie uitvoeren, zodat je daarna wijzigingen kunt doorvoeren op deze subscription. Bij twijfel - check eerst bij de network automators of het in sync zetten van de subscription mogelijk schadelijke gevolgen kan hebben op het netwerk.",
@@ -370,8 +385,8 @@
     "tasks": {
         "page": {
             "taskName": "Taak",
-            "rerunAll": "Alles opnieuw uitvoeren",
-            "rerunAllQuestion": "Weet u zeker dat u alle gefaalde taken opnieuw wilt uitvoeren?"
+            "rerunAll": "Alle taken herstarten",
+            "rerunAllQuestion": "Weet u zeker dat u alle gefaalde taken opnieuw wilt herstarten?"
         },
         "tabs": {
             "active": "Actief",
@@ -394,7 +409,13 @@
             "status": "Status",
             "numberOfQueuedJobs": "Aantal queued jobs",
             "numberOfRunningJobs": "Aantal running jobs",
-            "numberOfWorkersOnline": "Aantal workers online"
+            "numberOfWorkersOnline": "Aantal workers online",
+            "noSettingsExposed": "Er zijn geen instellingen beschikbaar vanuit de backend. Om dit in te schakelen, raadpleeg de ",
+            "settingsOverviewLink": "pagina Instellingenoverzicht in de documentatie"
+        },
+        "tabs": {
+            "actions": "Acties",
+            "envSettings": "Environment Settings"
         }
     },
     "startPage": {
@@ -427,5 +448,11 @@
             "headerTitle": "Totaal aantal producten",
             "listTitle": "Totaal aantal productinstanties"
         }
+    },
+    "hamburgerMenu": {
+        "support": "Support",
+        "softwareVersions": "Software Versies",
+        "logout": "Logout",
+        "aoStatusPage": "A&O applicatie status pagina"
     }
 }

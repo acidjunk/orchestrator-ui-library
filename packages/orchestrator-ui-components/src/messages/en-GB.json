@@ -20,11 +20,15 @@
         "lightMode": "Light mode",
         "websocketConnected": "This page receives live updates from the server",
         "websocketDisconnected": "The connection to the server is lost, click the icon or refresh the page",
+        "websocketDisconnectedShort": "WebSocket disconnected, click the icon to reconnect",
         "resetToDefault": "Reset to default",
         "savePreferences": "Save preferences",
         "numberOfRows": "Number of rows",
         "tableSettings": "Table settings",
-        "openMenu": "Open menu"
+        "openMenu": "Open menu",
+        "incompatibleVersion": "Incompatible version",
+        "incompatibleVersionText": "The version of the WFO UI is incompatible with this version of orchestrator-core.",
+        "minimumOrchestratorCoreVersion": "Minimum orchestrator-core version"
     },
     "common": {
         "product": "Product",
@@ -126,9 +130,17 @@
             "nodePort": {
                 "loadingNodes": "Loading Node subscriptions...",
                 "loadingPorts": "Loading IMS ports...",
+                "noPorts": "NO PORTS FOUND FOR THIS NODE",
                 "selectNode": "Select node",
                 "selectPort": "Select port",
                 "selectNodeFirst": "Select a node first"
+            },
+            "fileUpload": {
+                "invalidFiletype": "Invalid filetype!",
+                "errorUploading": "Error uploading file!",
+                "fileToBig": "File to large. Maximum file size: {fileSizeLimit}",
+                "initialPromptText": "Select or drag and drop a file",
+                "supportedFileTypes": "Supported file types: pdf"
             }
         }
     },
@@ -167,10 +179,11 @@
         "resourceTypes": {
             "type": "Resource type",
             "description": "Resource type description",
-            "resourceId": "Resource ID",
+            "resourceId": "ID",
             "usedInProductBlocks": "Used in product blocks"
         },
         "workflows": {
+            "workflowId": "ID",
             "name": "Workflow",
             "description": "Workflow description",
             "target": "Target",
@@ -178,6 +191,7 @@
             "createdAt": "Created"
         },
         "tasks": {
+            "workflowId": "ID",
             "name": "Task",
             "description": "Task description",
             "target": "Target",
@@ -200,7 +214,8 @@
             "started": "Started",
             "lastModified": "Last modified",
             "workflowTarget": "Target",
-            "productTag": "Product tag"
+            "productTag": "Product tag",
+            "showAllRelatedSubscriptions": "Show all related subscriptions"
         },
         "detail": {
             "retry": "Retry",
@@ -303,7 +318,8 @@
                     "no_validate_workflow": "This subscription can not be validated as the product has no validate workflows.",
                     "not_in_sync": "This subscription can not be modified because it is not in-sync. This means there is some error in the registration of the subscription or that it is being modified by another workflow.",
                     "relations_not_in_sync": "This subscription can not be modified because some related subscriptions are not in-sync. Locked subscriptions: {locked_relations}",
-                    "no_modify_subscription_in_use_by_others": "This subscription can not be modified because it is in use by one or more other subscriptions: {unterminated_parents}"
+                    "no_modify_subscription_in_use_by_others": "This subscription can not be modified because it is in use by one or more other subscriptions: {unterminated_parents}",
+                    "insufficient_workflow_permissions": "Insufficient user permissions to run this workflow"
                 }
             },
             "subscriptionInstanceId": "Instance ID",
@@ -350,6 +366,8 @@
             },
             "showAll": "Show all",
             "hideAll": "Hide all",
+            "selectByNameTitle": "Select product blocks by name",
+            "selectByNameButtonText": "Select by name",
             "see": "See",
             "setInSync": "Set in Sync",
             "setInSyncQuestion": "Are you sure you want to do this? You're about to force a subscription in sync. When it's clear why the subscription is out of sync this could enable you to start or finish a change on this subscription. When you're in doubt, please consult the network automators first as running workflows on subscriptions that are not in sync can potentially do great harm to the network.",
@@ -370,8 +388,8 @@
     "tasks": {
         "page": {
             "taskName": "Task",
-            "rerunAll": "Rerun all",
-            "rerunAllQuestion": "Are you sure you want to rerun all failed tasks?"
+            "rerunAll": "Re-try all tasks",
+            "rerunAllQuestion": "Are you sure you want to re-try all failed tasks?"
         },
         "tabs": {
             "active": "Active",
@@ -394,7 +412,15 @@
             "status": "Status",
             "numberOfQueuedJobs": "Number of queued jobs",
             "numberOfRunningJobs": "Number of running jobs",
-            "numberOfWorkersOnline": "Number of workers online"
+            "numberOfWorkersOnline": "Number of workers online",
+            "viewStatusPage": "View AO status page",
+            "aoStackStatus": "AO stack status",
+            "noSettingsExposed": "No settings exposed by the backend, to enable this, please refer to the",
+            "settingsOverviewLink": "Settings Overview page in the documentation"
+        },
+        "tabs": {
+            "actions": "Actions",
+            "envSettings": "Environment Settings"
         }
     },
     "startPage": {
@@ -427,5 +453,12 @@
             "headerTitle": "Total number of products",
             "listTitle": "Total number of product instances"
         }
+    },
+    "hamburgerMenu": {
+        "openMenu": "Open menu",
+        "support": "Support",
+        "softwareVersions": "Software Versions",
+        "logout": "Logout",
+        "aoStatusPage": "A&O application status page"
     }
 }

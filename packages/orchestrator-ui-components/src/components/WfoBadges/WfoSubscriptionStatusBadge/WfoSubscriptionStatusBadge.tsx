@@ -5,15 +5,16 @@ import { SubscriptionStatus } from '../../../types';
 import { WfoBadge } from '../WfoBadge';
 
 export type WfoSubscriptionStatusBadgeProps = {
-    status: SubscriptionStatus;
+    status?: SubscriptionStatus;
 };
 
 export const WfoSubscriptionStatusBadge: FC<
     WfoSubscriptionStatusBadgeProps
 > = ({ status }) => {
     const { theme, toSecondaryColor } = useOrchestratorTheme();
+    const lowerCaseStatus = status?.toLowerCase() || '';
 
-    const getBadgeColorFromStatus = (status: string) => {
+    const getBadgeColorFromStatus = () => {
         const {
             primary,
             darkestShade,
@@ -23,7 +24,7 @@ export const WfoSubscriptionStatusBadge: FC<
             successText,
         } = theme.colors;
 
-        switch (status.toLowerCase()) {
+        switch (lowerCaseStatus) {
             case SubscriptionStatus.ACTIVE:
                 return {
                     badgeColor: toSecondaryColor(success),
@@ -43,11 +44,11 @@ export const WfoSubscriptionStatusBadge: FC<
         }
     };
 
-    const { badgeColor, textColor } = getBadgeColorFromStatus(status);
+    const { badgeColor, textColor } = getBadgeColorFromStatus();
 
     return (
         <WfoBadge textColor={textColor} color={badgeColor}>
-            {status.toLowerCase()}
+            {lowerCaseStatus}
         </WfoBadge>
     );
 };

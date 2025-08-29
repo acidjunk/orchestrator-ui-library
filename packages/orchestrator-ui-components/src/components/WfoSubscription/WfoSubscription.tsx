@@ -43,10 +43,9 @@ export const WfoSubscription = ({ subscriptionId }: WfoSubscriptionProps) => {
         );
     })();
 
-    const { data, isLoading, isError, isFetching } =
-        useGetSubscriptionDetailQuery({
-            subscriptionId,
-        });
+    const { data, isLoading, isError } = useGetSubscriptionDetailQuery({
+        subscriptionId,
+    });
 
     const onSelectedTabChanged = (tab: SubscriptionDetailTab) => {
         setActiveTab(tab);
@@ -100,14 +99,14 @@ export const WfoSubscription = ({ subscriptionId }: WfoSubscriptionProps) => {
                         {selectedTab === SubscriptionDetailTab.GENERAL_TAB && (
                             <WfoSubscriptionGeneral
                                 subscriptionDetail={subscriptionDetail}
-                                isFetching={isFetching}
                             />
                         )}
                         {selectedTab === SubscriptionDetailTab.PROCESSES_TAB &&
-                            data && (
+                            data &&
+                            subscriptionDetail.processes?.page && (
                                 <WfoProcessesTimeline
                                     subscriptionDetailProcesses={
-                                        subscriptionDetail.processes.page
+                                        subscriptionDetail.processes?.page
                                     }
                                 />
                             )}

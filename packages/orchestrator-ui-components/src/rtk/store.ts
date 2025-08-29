@@ -8,6 +8,7 @@ import {
     OrchestratorComponentOverride,
     getOrchestratorComponentOverrideSlice,
 } from '@/rtk/slices/orchestratorComponentOverride';
+import { PydanticForm, getPydanticFormSlice } from '@/rtk/slices/pydanticForm';
 import type { OrchestratorConfig } from '@/types';
 
 import { orchestratorApi } from './api';
@@ -22,23 +23,29 @@ export type RootState = {
     toastMessages: ReturnType<typeof toastMessagesReducer>;
     orchestratorConfig: OrchestratorConfig;
     orchestratorComponentOverride?: OrchestratorComponentOverride;
+    pydanticForm?: PydanticForm;
     customApis: CustomApiConfig[];
 };
 
 export type InitialOrchestratorStoreConfig = Pick<
     RootState,
-    'orchestratorConfig' | 'customApis' | 'orchestratorComponentOverride'
+    | 'orchestratorConfig'
+    | 'customApis'
+    | 'orchestratorComponentOverride'
+    | 'pydanticForm'
 >;
 
 export const getOrchestratorStore = ({
     orchestratorConfig,
     orchestratorComponentOverride = {},
+    pydanticForm = {},
     customApis,
 }: InitialOrchestratorStoreConfig): EnhancedStore<RootState> => {
     const configSlice = getOrchestratorConfigSlice(orchestratorConfig);
     const orchestratorComponentOverrideSlice =
         getOrchestratorComponentOverrideSlice(orchestratorComponentOverride);
     const customApisSlice = getCustomApiSlice(customApis);
+    const componentMatcherSlice = getPydanticFormSlice(pydanticForm);
 
     const orchestratorStore = configureStore({
         reducer: {
@@ -48,6 +55,7 @@ export const getOrchestratorStore = ({
             orchestratorComponentOverride:
                 orchestratorComponentOverrideSlice.reducer,
             customApis: customApisSlice?.reducer,
+            pydanticForm: componentMatcherSlice?.reducer,
         },
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({

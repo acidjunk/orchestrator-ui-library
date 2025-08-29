@@ -12,10 +12,12 @@ const workflowOptionsQuery = `
         workflows(first: 1000000, after: 0, filterBy: [{ field: "target", value: "${WorkflowTarget.CREATE}"}]) {
             page {
                 name
+                isAllowed
                 products {
                     productType
                     productId
                     name
+                    tag
                 }
             }
         }
@@ -24,9 +26,10 @@ const workflowOptionsQuery = `
 
 const taskOptionsQuery = `
     query StartOptions {
-        workflows(first: 1000000, after: 0, filterBy: [{ field: "target", value: "${WorkflowTarget.SYSTEM}"}]) {
+        workflows(first: 1000000, after: 0, filterBy: [{ field: "isTask", value: "true"}]) {
             page {
                 name
+                isAllowed
                 description
             }
         }
@@ -35,17 +38,21 @@ const taskOptionsQuery = `
 
 type WorkflowOption = {
     workflowName: WorkflowDefinition['name'];
+    isAllowed: WorkflowDefinition['isAllowed'];
     productName: ProductDefinition['name'];
     productId: ProductDefinition['productId'];
     productType: ProductDefinition['productType'];
+    productTag: ProductDefinition['tag'];
 };
 
 type WorkflowOptionsResult = StartOptionsResult<{
     name: WorkflowDefinition['name'];
+    isAllowed: WorkflowDefinition['isAllowed'];
     products: {
         name: ProductDefinition['name'];
         productId: ProductDefinition['productId'];
         productType: ProductDefinition['productType'];
+        tag: ProductDefinition['tag'];
     }[];
 }>;
 
@@ -53,7 +60,10 @@ export type StartOptionsResponse<StartOption> = {
     startOptions: StartOption[];
 };
 
-type TaskOption = Pick<WorkflowDefinition, 'name' | 'description'>;
+type TaskOption = Pick<
+    WorkflowDefinition,
+    'name' | 'isAllowed' | 'description'
+>;
 type TaskOptionsResult = StartOptionsResult<TaskOption>;
 
 const startButtonOptionsApi = orchestratorApi.injectEndpoints({
@@ -65,17 +75,21 @@ const startButtonOptionsApi = orchestratorApi.injectEndpoints({
             query: () => ({
                 document: workflowOptionsQuery,
             }),
-            transformResponse: (response: WorkflowOptionsResult) => {
+            transformResponse: (
+                response: WorkflowOptionsResult | undefined,
+            ) => {
                 const startOptions: WorkflowOption[] = [];
-                const workflows = response.workflows?.page || [];
+                const workflows = response?.workflows?.page || [];
                 workflows.forEach((workflow) => {
                     const workflowName = workflow.name;
                     workflow.products.forEach((product) => {
                         startOptions.push({
                             workflowName,
+                            isAllowed: workflow.isAllowed,
                             productName: product.name,
                             productId: product.productId,
                             productType: product.productType,
+                            productTag: product.tag,
                         });
                     });
                 });
@@ -91,6 +105,7 @@ const startButtonOptionsApi = orchestratorApi.injectEndpoints({
                 return {
                     startOptions: response.workflows.page.map((option) => ({
                         name: option.name,
+                        isAllowed: option.isAllowed,
                         description: option.description,
                     })),
                 };

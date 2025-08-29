@@ -2,9 +2,22 @@ import React, { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { EuiCallOut, EuiFlexGroup, EuiFlexItem, EuiText } from '@elastic/eui';
+import {
+    EuiCallOut,
+    EuiFlexGroup,
+    EuiFlexItem,
+    EuiSelectableOption,
+    EuiText,
+} from '@elastic/eui';
+import { EuiSelectableOptionCheckedType } from '@elastic/eui/src/components/selectable/selectable_option';
 
-import { WfoLoading, WfoTextAnchor } from '@/components';
+import {
+    PATH_SUBSCRIPTIONS,
+    WfoLoading,
+    WfoTextAnchor,
+    mapProductBlockInstancesToEuiSelectableOptions,
+} from '@/components';
+import { WfoButtonComboBox } from '@/components/WfoButtonComboBox';
 import { TreeContext, TreeContextType } from '@/contexts';
 import { useOrchestratorTheme, useWithOrchestratorTheme } from '@/hooks';
 import {
@@ -21,14 +34,18 @@ import { WfoSubscriptionProductBlock } from './WfoSubscriptionProductBlock';
 import { getSubscriptionDetailStyles } from './styles';
 import { getProductBlockTitle } from './utils';
 
+const EUI_OPTION_CHECKED_STATE_ON: EuiSelectableOptionCheckedType = 'on';
+
 interface WfoSubscriptionDetailTreeProps {
     productBlockInstances: ProductBlockInstance[];
     subscriptionId: Subscription['subscriptionId'];
+    subscriptionPath?: string;
 }
 
 export const WfoSubscriptionDetailTree = ({
     productBlockInstances,
     subscriptionId,
+    subscriptionPath = PATH_SUBSCRIPTIONS,
 }: WfoSubscriptionDetailTreeProps) => {
     const t = useTranslations('subscriptions.detail');
     const { theme } = useOrchestratorTheme();
@@ -36,8 +53,14 @@ export const WfoSubscriptionDetailTree = ({
     const { productBlockTreeWidth } = useWithOrchestratorTheme(
         getSubscriptionDetailStyles,
     );
-    const { selectedIds, expandAll, collapseAll, resetSelection, selectAll } =
-        React.useContext(TreeContext) as TreeContextType;
+    const {
+        selectedIds,
+        expandAll,
+        resetSelection,
+        selectAll,
+        selectIds,
+        deselectIds,
+    } = React.useContext(TreeContext) as TreeContextType;
 
     let tree: TreeBlock | null = null;
     const depthList: number[] = [];
@@ -97,7 +120,6 @@ export const WfoSubscriptionDetailTree = ({
     const toggleShowAll = () => {
         if (selectedIds.length === productBlockInstances.length) {
             resetSelection();
-            collapseAll();
         } else {
             selectAll();
             expandAll();
@@ -128,6 +150,18 @@ export const WfoSubscriptionDetailTree = ({
 
     const headerHeight = 265; // The height of the header part of the page that needs to be subtracted from 100vh to fit the page
 
+    const handleOptionChange = (changedOption: EuiSelectableOption) => {
+        if (changedOption.data?.ids === undefined) {
+            return;
+        }
+
+        const { checked, data } = changedOption;
+        const shouldAddIds = checked === EUI_OPTION_CHECKED_STATE_ON;
+
+        expandAll();
+        return shouldAddIds ? selectIds(data.ids) : deselectIds(data.ids);
+    };
+
     return (
         <EuiFlexGroup
             css={{
@@ -156,15 +190,33 @@ export const WfoSubscriptionDetailTree = ({
                                 </EuiText>
                             </EuiFlexItem>
                             <EuiFlexItem grow={false}>
-                                <WfoTextAnchor
-                                    text={t(
-                                        selectedIds.length ===
-                                            productBlockInstances.length
-                                            ? 'hideAll'
-                                            : 'showAll',
-                                    )}
-                                    onClick={toggleShowAll}
-                                />
+                                <EuiFlexGroup>
+                                    <WfoTextAnchor
+                                        text={t(
+                                            selectedIds.length ===
+                                                productBlockInstances.length
+                                                ? 'hideAll'
+                                                : 'showAll',
+                                        )}
+                                        onClick={toggleShowAll}
+                                    />
+                                    <WfoButtonComboBox
+                                        options={mapProductBlockInstancesToEuiSelectableOptions(
+                                            productBlockInstances,
+                                        )}
+                                        onOptionChange={handleOptionChange}
+                                        title={t('selectByNameTitle')}
+                                    >
+                                        {(togglePopover) => (
+                                            <WfoTextAnchor
+                                                text={t(
+                                                    'selectByNameButtonText',
+                                                )}
+                                                onClick={togglePopover}
+                                            />
+                                        )}
+                                    </WfoButtonComboBox>
+                                </EuiFlexGroup>
                             </EuiFlexItem>
                         </EuiFlexGroup>
                     </EuiFlexItem>
@@ -210,6 +262,7 @@ export const WfoSubscriptionDetailTree = ({
                                     key={id}
                                     subscriptionId={subscriptionId}
                                     productBlock={block}
+                                    subscriptionPath={subscriptionPath}
                                 />
                             );
                         })}

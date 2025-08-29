@@ -18,12 +18,14 @@ query MetadataWorkflows(
         after: $after
         sortBy: $sortBy
         query: $query
-        filterBy: { field: "target", value: "SYSTEM" }
+        filterBy: { field: "isTask", value: "true" }
     ) {
         page {
+            workflowId
             name
             description
             target
+            isTask
             products {
                 tag
             }
@@ -49,7 +51,7 @@ export type TasksResponse = {
 const tasksApi = orchestratorApi.injectEndpoints({
     endpoints: (builder) => ({
         getTasks: builder.query<
-            TasksResponse,
+            TasksResponse | undefined,
             GraphqlQueryVariables<TaskDefinition>
         >({
             query: (variables) => ({
@@ -57,8 +59,12 @@ const tasksApi = orchestratorApi.injectEndpoints({
                 variables,
             }),
             transformResponse: (
-                response: TaskDefinitionsResult,
-            ): TasksResponse => {
+                response: TaskDefinitionsResult | undefined,
+            ): TasksResponse | undefined => {
+                if (!response) {
+                    return undefined;
+                }
+
                 const tasks = response.workflows.page || [];
                 const pageInfo = response.workflows.pageInfo || {};
 

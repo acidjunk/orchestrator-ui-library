@@ -1,15 +1,19 @@
 import { TranslationValues } from 'next-intl';
 
-import { EuiThemeComputed } from '@elastic/eui';
+import { EuiSelectableOption, EuiThemeComputed } from '@elastic/eui';
 
 import {
     FieldValue,
     ProcessStatus,
+    ProductBlockDefinition,
+    ProductBlockInstance,
     SortOrder,
     SubscriptionAction,
     SubscriptionDetailProcess,
     WorkflowTarget,
 } from '@/types';
+
+const PRODUCT_BLOCK_NAME_FIELD: keyof ProductBlockDefinition = 'name';
 
 export enum SubscriptionDetailTab {
     GENERAL_TAB = 'general',
@@ -68,6 +72,7 @@ export const getWorkflowTargetColor = (
         case WorkflowTarget.MODIFY:
             return theme.colors.primaryText;
         case WorkflowTarget.SYSTEM:
+        case WorkflowTarget.VALIDATE:
             return theme.colors.warning;
         case WorkflowTarget.TERMINATE:
             return theme.colors.danger;
@@ -84,6 +89,7 @@ export const getWorkflowTargetIconContent = (
         case WorkflowTarget.CREATE:
             return 'C';
         case WorkflowTarget.SYSTEM:
+        case WorkflowTarget.VALIDATE:
             return 'T';
         case WorkflowTarget.TERMINATE:
             return 'X';
@@ -93,9 +99,9 @@ export const getWorkflowTargetIconContent = (
 };
 
 export const getLastUncompletedProcess = (
-    processes: SubscriptionDetailProcess[],
+    processes?: SubscriptionDetailProcess[],
 ): SubscriptionDetailProcess | undefined => {
-    if (processes.length === 0) {
+    if (!processes || processes.length === 0) {
         return;
     }
 
@@ -107,13 +113,13 @@ export const getLastUncompletedProcess = (
             return dateB.getTime() - dateA.getTime();
         });
 
-    return uncompletedProcesses.length > 0
+    return (uncompletedProcesses && uncompletedProcesses.length) > 0
         ? uncompletedProcesses[0]
         : undefined;
 };
 
-export const getLatestTaskDate = (processes: SubscriptionDetailProcess[]) => {
-    if (processes.length === 0) {
+export const getLatestTaskDate = (processes?: SubscriptionDetailProcess[]) => {
+    if (!processes || processes.length === 0) {
         return '';
     }
 
@@ -142,4 +148,34 @@ export const sortProcessesByDate = (
             return dateB - dateA; // Descending order (newest first)
         }
     });
+};
+
+export const mapProductBlockInstancesToEuiSelectableOptions = (
+    productBlockInstances: ProductBlockInstance[],
+): EuiSelectableOption[] => {
+    const items2Map = productBlockInstances.reduce((acc, curr) => {
+        const name = getFieldFromProductBlockInstanceValues(
+            curr.productBlockInstanceValues,
+            PRODUCT_BLOCK_NAME_FIELD,
+        ).toString();
+
+        if (!name) {
+            console.error('Name field is missing', curr);
+        }
+
+        if (acc.has(name)) {
+            acc.get(name)?.push(curr.id);
+        } else {
+            acc.set(name, [curr.id]);
+        }
+
+        return acc;
+    }, new Map<string, number[]>());
+
+    return Array.from(items2Map).map(([label, ids]) => ({
+        label,
+        data: {
+            ids,
+        },
+    }));
 };

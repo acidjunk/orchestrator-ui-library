@@ -1,7 +1,9 @@
-import { orchestratorApi } from '@/rtk';
+import { METADATA_WORKFLOWS_ENDPOINT } from '@/configuration';
+import { BaseQueryTypes, orchestratorApi } from '@/rtk';
 import {
     BaseGraphQlResult,
     GraphqlQueryVariables,
+    MetadataDescriptionParams,
     WorkflowDefinition,
     WorkflowDefinitionsResult,
 } from '@/types';
@@ -36,9 +38,11 @@ query MetadataWorkflows(
         filterBy: { field: "target", value: "CREATE|MODIFY|TERMINATE" }
     ) {
         page {
+            workflowId
             name
             description
             target
+            isTask
             products {
                 tag
             }
@@ -73,7 +77,7 @@ export type WorkflowsResponse = {
 const workflowsApi = orchestratorApi.injectEndpoints({
     endpoints: (builder) => ({
         getWorkflows: builder.query<
-            WorkflowsResponse,
+            WorkflowsResponse | undefined,
             GraphqlQueryVariables<WorkflowDefinition>
         >({
             query: (variables) => ({
@@ -81,10 +85,14 @@ const workflowsApi = orchestratorApi.injectEndpoints({
                 variables,
             }),
             transformResponse: (
-                response: WorkflowDefinitionsResult,
-            ): WorkflowsResponse => {
-                const workflows = response.workflows.page || [];
-                const pageInfo = response.workflows.pageInfo || {};
+                response: WorkflowDefinitionsResult | undefined,
+            ): WorkflowsResponse | undefined => {
+                if (!response) {
+                    return undefined;
+                }
+
+                const workflows = response?.workflows.page || [];
+                const pageInfo = response?.workflows.pageInfo || {};
 
                 return {
                     workflows,
@@ -133,3 +141,25 @@ export const {
     useLazyGetWorkflowsQuery,
     useGetDescriptionForWorkflowNameQuery,
 } = workflowsApi;
+
+const workflowsRestApi = orchestratorApi.injectEndpoints({
+    endpoints: (build) => ({
+        updateWorkflow: build.mutation<null, MetadataDescriptionParams>({
+            query: (workflow) => ({
+                url: `${METADATA_WORKFLOWS_ENDPOINT}/${workflow.id}`,
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: {
+                    description: workflow.description,
+                },
+            }),
+            extraOptions: {
+                baseQueryType: BaseQueryTypes.fetch,
+            },
+        }),
+    }),
+});
+
+export const { useUpdateWorkflowMutation } = workflowsRestApi;

@@ -8,6 +8,7 @@ import {
     DEFAULT_PAGE_SIZE,
     DEFAULT_PAGE_SIZES,
     METADATA_RESOURCE_TYPES_TABLE_LOCAL_STORAGE_KEY,
+    PATH_METADATA_PRODUCT_BLOCKS,
     WfoProductBlockBadge,
     getDataSortHandler,
     getPageIndexChangeHandler,
@@ -16,6 +17,7 @@ import {
 } from '@/components';
 import type { StoredTableConfig, WfoDataSorting } from '@/components';
 import { WfoFirstPartUUID } from '@/components';
+import { WfoMetadataDescriptionField } from '@/components/WfoMetadata/WfoMetadataDescriptionField';
 import { WfoAdvancedTable } from '@/components/WfoTable/WfoAdvancedTable';
 import { WfoAdvancedTableColumnConfig } from '@/components/WfoTable/WfoAdvancedTable/types';
 import { ColumnType, Pagination } from '@/components/WfoTable/WfoTable';
@@ -29,6 +31,7 @@ import {
     ResourceTypesResponse,
     useGetResourceTypesQuery,
     useLazyGetResourceTypesQuery,
+    useUpdateResourceTypeMutation,
 } from '@/rtk';
 import { mapRtkErrorToWfoError } from '@/rtk/utils';
 import {
@@ -37,7 +40,11 @@ import {
     ResourceTypeDefinition,
     SortOrder,
 } from '@/types';
-import { getConcatenatedResult, getQueryVariablesForExport } from '@/utils';
+import {
+    getConcatenatedResult,
+    getQueryUrl,
+    getQueryVariablesForExport,
+} from '@/utils';
 import {
     csvDownloadHandler,
     getCsvFileNameWithDate,
@@ -62,6 +69,7 @@ export const WfoResourceTypesPage = () => {
     const getStoredTableConfig = useStoredTableConfig<ResourceTypeDefinition>(
         METADATA_RESOURCE_TYPES_TABLE_LOCAL_STORAGE_KEY,
     );
+    const [updateResourceType] = useUpdateResourceTypeMutation();
 
     useEffect(() => {
         const storedConfig = getStoredTableConfig();
@@ -88,7 +96,7 @@ export const WfoResourceTypesPage = () => {
         resourceTypeId: {
             columnType: ColumnType.DATA,
             label: t('resourceId'),
-            width: '90',
+            width: '90px',
             renderData: (value) => <WfoFirstPartUUID UUID={value} />,
             renderDetails: (value) => value,
             renderTooltip: (value) => value,
@@ -96,7 +104,7 @@ export const WfoResourceTypesPage = () => {
         resourceType: {
             columnType: ColumnType.DATA,
             label: t('type'),
-            width: '200',
+            width: '225px',
             renderData: (value) => (
                 <WfoProductBlockBadge badgeType={BadgeType.RESOURCE_TYPE}>
                     {value}
@@ -106,30 +114,51 @@ export const WfoResourceTypesPage = () => {
         description: {
             columnType: ColumnType.DATA,
             label: t('description'),
+            width: '700px',
+            renderData: (value, row) => (
+                <WfoMetadataDescriptionField
+                    onSave={(updatedNote) =>
+                        updateResourceType({
+                            id: row.resourceTypeId,
+                            description: updatedNote,
+                        })
+                    }
+                    description={value}
+                />
+            ),
         },
         productBlocks: {
             columnType: ColumnType.DATA,
             label: t('usedInProductBlocks'),
+            width: '1000px',
             renderData: (productBlocks) => (
                 <>
-                    {productBlocks.map((productBlock, index) => (
+                    {productBlocks.map(({ name }, index) => (
                         <WfoProductBlockBadge
                             key={index}
+                            link={getQueryUrl(
+                                PATH_METADATA_PRODUCT_BLOCKS,
+                                `name:"${name}"`,
+                            )}
                             badgeType={BadgeType.PRODUCT_BLOCK}
                         >
-                            {productBlock.name}
+                            {name}
                         </WfoProductBlockBadge>
                     ))}
                 </>
             ),
             renderDetails: (productBlocks) => (
                 <EuiBadgeGroup gutterSize="s">
-                    {productBlocks.map((productBlock, index) => (
+                    {productBlocks.map(({ name }, index) => (
                         <WfoProductBlockBadge
                             key={index}
+                            link={getQueryUrl(
+                                PATH_METADATA_PRODUCT_BLOCKS,
+                                `name:"${name}"`,
+                            )}
                             badgeType={BadgeType.PRODUCT_BLOCK}
                         >
-                            {productBlock.name}
+                            {name}
                         </WfoProductBlockBadge>
                     ))}
                 </EuiBadgeGroup>

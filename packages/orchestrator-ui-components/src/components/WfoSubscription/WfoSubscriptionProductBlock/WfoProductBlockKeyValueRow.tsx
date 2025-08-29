@@ -9,13 +9,18 @@ import { camelToHuman } from '@/utils';
 
 import { getStyles } from './styles';
 
+export const KEY_CELL_CLASS_NAME = 'key-cell';
+export const VALUE_CELL_CLASS_NAME = 'value-cell';
+
 export type WfoProductBlockKeyValueRowProps = {
     fieldValue: FieldValue | RenderableFieldValue;
+    allFieldValues: FieldValue[] | RenderableFieldValue[];
+    className?: string;
 };
 
 export const WfoProductBlockKeyValueRow: FC<
     WfoProductBlockKeyValueRowProps
-> = ({ fieldValue }) => {
+> = ({ fieldValue, allFieldValues, className }) => {
     const { leftColumnStyle, rowStyle } = useWithOrchestratorTheme(getStyles);
     const { getOverriddenValue } = useSubscriptionDetailValueOverride();
 
@@ -35,12 +40,12 @@ export const WfoProductBlockKeyValueRow: FC<
     };
 
     return (
-        <tr css={rowStyle}>
-            <td css={leftColumnStyle}>
+        <tr className={className} css={rowStyle}>
+            <td className={KEY_CELL_CLASS_NAME} css={leftColumnStyle}>
                 <b>{camelToHuman(field)}</b>
             </td>
-            <td>
-                {getOverriddenValue(fieldValue) ?? (
+            <td className={VALUE_CELL_CLASS_NAME}>
+                {getOverriddenValue(fieldValue, allFieldValues) ?? (
                     <WfoProductBlockValue value={value} />
                 )}
             </td>

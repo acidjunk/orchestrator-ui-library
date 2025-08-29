@@ -13,7 +13,7 @@ import WfoDiff from '@/components/WfoDiff/WfoDiff';
 import { WfoTraceback } from '@/components/WfoWorkflowSteps/WfoTraceback/WfoTraceback';
 import { useGetRawProcessDetailQuery } from '@/rtk/endpoints/processDetail';
 import { ProcessStatus, Step, StepStatus } from '@/types';
-import { InputForm } from '@/types/forms';
+import { FormUserPermissions, InputForm } from '@/types/forms';
 
 export type StepListItem = {
     step: Step;
@@ -29,6 +29,7 @@ export interface WfoWorkflowStepListProps {
     processId: string;
     isTask: boolean;
     userInputForm?: InputForm;
+    userPermissions: FormUserPermissions;
 }
 
 export const WfoProcessRawData = ({ processId }: { processId: string }) => {
@@ -43,14 +44,15 @@ export const WfoProcessSubscriptionDelta = ({
 }) => {
     const { data, isFetching } = useGetRawProcessDetailQuery({ processId });
 
-    const subscriptionKey =
+    const subscriptionId =
         data?.current_state?.subscription?.subscription_id ?? '';
     const newText = data?.current_state?.subscription ?? null;
-    const oldText =
-        data?.current_state?.__old_subscriptions__ &&
-        subscriptionKey in data?.current_state?.__old_subscriptions__
-            ? data?.current_state?.__old_subscriptions__[subscriptionKey]
+    const oldSubscriptions = data?.current_state?.__old_subscriptions__ || {};
+    const oldSubscription =
+        subscriptionId in oldSubscriptions
+            ? oldSubscriptions[subscriptionId]
             : null;
+    const oldText = oldSubscription || null;
 
     return isFetching ? (
         <WfoLoading />
@@ -69,10 +71,10 @@ export const WfoWorkflowStepList = React.forwardRef(
             steps = [],
             lastStatus,
             traceBack,
-            startedAt,
             processId,
             isTask,
             userInputForm,
+            userPermissions,
         }: WfoWorkflowStepListProps,
         reference: Ref<WfoStepListRef>,
     ) => {
@@ -205,7 +207,6 @@ export const WfoWorkflowStepList = React.forwardRef(
                     <WfoStepList
                         ref={reference}
                         stepListItems={stepListItems}
-                        startedAt={startedAt}
                         showHiddenKeys={showHiddenKeys}
                         isTask={isTask}
                         onToggleExpandStepListItem={
@@ -213,6 +214,7 @@ export const WfoWorkflowStepList = React.forwardRef(
                         }
                         processId={processId}
                         onTriggerExpandStepListItem={handleExpandStepListItem}
+                        userPermissions={userPermissions}
                     />
                 )}
             </>
