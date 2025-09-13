@@ -11,6 +11,7 @@
         "prettier": "prettier -c \"{**/*,*}.{ts,tsx,json,js,md}\"",
         "prettier-fix": "prettier --write \"{**/*,*}.{ts,tsx,json,js,md}\"",
         "build": "turbo run build",
+        "preinstall": "git submodule update --init --recursive",
         "packages:changeset": "changeset",
         "packages:publish": "turbo run build lint test && changeset publish"
     },
