@@ -1,3 +1,0 @@
-[submodule "apps/example-orchestrator-ui"]
-	path = apps/example-orchestrator-ui
-	url = git@github.com:acidjunk/example-orchestrator-ui.git
