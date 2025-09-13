@@ -12,8 +12,7 @@
         "prettier-fix": "prettier --write \"{**/*,*}.{ts,tsx,json,js,md}\"",
         "build": "turbo run build",
         "packages:changeset": "changeset",
-        "packages:publish": "turbo run build lint test && changeset publish",
-        "postinstall": "husky && turbo run build --filter=./packages/*"
+        "packages:publish": "turbo run build lint test && changeset publish"
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.1",
@@ -22,7 +21,8 @@
         "turbo": "^2.2.3"
     },
     "quirks": {
-        "@rollup/rollup-darwin-arm64": "^4.50.1"
+        "@rollup/rollup-darwin-arm64": "^4.50.1",
+        "postinstall": "husky && turbo run build --filter=./packages/*"
     },
     "name": "orchestrator-core-ui",
     "workspaces": [
