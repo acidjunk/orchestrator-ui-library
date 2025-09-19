@@ -5,7 +5,7 @@ import {
     EntityKind,
     PathAutocompleteResponse,
     PathInfo,
-    ValueSchema,
+    value_schema,
 } from '@/types';
 
 import { useDebounce } from './useDebounce';
@@ -19,7 +19,7 @@ export const usePathAutocomplete = (prefix: string, entityType: EntityKind) => {
             string,
             {
                 operators: string[];
-                value_schema: Record<string, ValueSchema>;
+                value_schema: Record<string, value_schema>;
             }
         >
     >({});
