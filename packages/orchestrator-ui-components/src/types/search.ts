@@ -203,7 +203,7 @@ export type PathInfo = {
     path: string;
     type: PathDataType;
     operators: string[];
-    valueSchema: Record<string, ValueSchema>;
+    value_schema: Record<string, ValueSchema>;
     example_values?: string[];
     group: 'leaf' | 'component';
     displayLabel?: string;
